@@ -42,6 +42,20 @@ export async function updateInvoice(invoiceId: string, formData: FormData) {
   if (!current) redirect("/invoices?error=Invoice%20not%20found.");
   if (current.status === "paid") redirect(`/invoices/${invoiceId}?error=Paid%20invoices%20cannot%20be%20edited.`);
 
+  const { data: activeAttempt, error: attemptError } = await supabase
+    .from("payment_attempts")
+    .select("id")
+    .eq("business_id", business.id)
+    .eq("invoice_id", invoiceId)
+    .in("status", ["created", "pending_approval", "approved"])
+    .limit(1)
+    .maybeSingle();
+  if (attemptError) {
+    console.error("Active payment attempt lookup failed", attemptError);
+    redirect(`/invoices/${invoiceId}/edit?error=Payment%20state%20could%20not%20be%20checked.`);
+  }
+  if (activeAttempt) redirect(`/invoices/${invoiceId}/edit?error=Complete%20or%20cancel%20the%20active%20PayPal%20checkout%20before%20editing%20this%20invoice.`);
+
   const { data, error } = await supabase
     .from("invoices")
     .update(parsed.data)
@@ -51,6 +65,7 @@ export async function updateInvoice(invoiceId: string, formData: FormData) {
     .maybeSingle();
   if (error) {
     console.error("Invoice update failed", error);
+    if (error.code === "55000") redirect(`/invoices/${invoiceId}/edit?error=Complete%20or%20cancel%20the%20active%20PayPal%20checkout%20before%20editing%20this%20invoice.`);
     if (error.code === "23505") redirect(`/invoices/${invoiceId}/edit?error=That%20invoice%20number%20is%20already%20in%20use.`);
     redirect(`/invoices/${invoiceId}/edit?error=We%20could%20not%20save%20this%20invoice.`);
   }

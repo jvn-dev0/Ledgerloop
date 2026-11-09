@@ -10,7 +10,7 @@
 
 **From unpaid invoice to verified payment.**
 
-An accounts receivable workspace for customer records, invoices, and currency-aware receivables. PayPal payments and the Collections Agent are planned for later milestones.
+An accounts receivable workspace for customer records, invoices, currency-aware receivables, and verified PayPal payment processing. The Collections Agent remains a later milestone.
 
 <br/>
 
@@ -27,7 +27,9 @@ An accounts receivable workspace for customer records, invoices, and currency-aw
 [Tech Stack](#-technology-stack) •
 [Getting Started](#-getting-started) •
 [Roadmap](#-roadmap) •
-[Day 1 Update](README_DAY1.md)
+[Day 1 Update](README_DAY1.md) •
+[Day 2 Update](README_DAY2.md) •
+[Performance Notes](docs/performance-and-complexity.md)
 
 </div>
 
@@ -41,9 +43,9 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-The Day 1 foundation supports customer and invoice management, with receivables summaries calculated from persisted invoice records. The **LedgerLoop Collections Agent** is planned for Day 3.
+Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. The **LedgerLoop Collections Agent** is planned for Day 3.
 
-PayPal Sandbox checkout, capture verification, and reconciliation are planned for Day 2. The current application does not simulate payment activity.
+Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials; the application does not simulate payment activity.
 
 **Our goal:** Reduce manual accounts receivable work and make the journey from invoice creation to payment reconciliation simpler and more transparent.
 
@@ -52,21 +54,30 @@ PayPal Sandbox checkout, capture verification, and reconciliation are planned fo
 ```text
 app/
   (workspace)/       Authenticated dashboard, customer, invoice, and payment pages
-  actions/            Server actions for authentication and record changes
-  login/               Supabase Auth entry point
-  signup/              Supabase Auth entry point
-  setup/              Supabase configuration and migration guidance
-components/            Shared forms, headings, badges, and feedback states
+  actions/            Server actions for authentication, invoices, and payment links
+  api/                Customer search and PayPal order, capture, cancel, and webhook routes
+  pay/[token]/         Public invoice checkout page
+  login/, signup/      Supabase Auth entry points
+  setup/               Supabase configuration and migration guidance
+components/
+  dashboard/           Receivables metrics and summary views
+  invoices/            Customer picker, invoice forms, and payment-link controls
+  layout/              Workspace navigation
+  payments/            PayPal checkout button
+  ui/                  Shared feedback, pagination, loading, and status components
 lib/
   data/                Business-scoped database queries
-  finance/             Decimal-safe money utilities
-  supabase/            Server and request-scoped Supabase clients
+  finance/             Decimal-safe money and date utilities
+  paypal/              Server-only PayPal API and checkout helpers
+  supabase/            Server, admin, and request-scoped Supabase clients
   validations/         Server-side form validation
-supabase/migrations/   PostgreSQL schema and Row Level Security policies
+supabase/migrations/   PostgreSQL schema, RLS, indexes, and reconciliation functions
 tests/                 Finance unit tests
 types/                 Database and domain types
 README.md              Product overview and local setup
 README_DAY1.md         Day 1 implementation and verification notes
+README_DAY2.md         Day 2 payment implementation and setup notes
+docs/                  Performance and complexity notes
 ```
 
 Local credentials belong in `.env.local`; generated dependencies and build/test output are excluded from Git by `.gitignore`.
@@ -108,12 +119,12 @@ Planned agent capabilities:
 
 | Feature | Description |
 |---|---|
-| Customer management | Implemented in code; Supabase setup is required to verify persistence. |
-| Invoice management | Implemented in code; Supabase setup is required to verify persistence. |
-| Receivables dashboard | Database summary grouped by currency; requires the migration to be applied. |
-| Business data isolation | Supabase Auth and row-level security policies are defined in the migration. |
+| Customer management | Implemented with business-scoped Supabase queries and paginated lists. |
+| Invoice management | Implemented with business-scoped forms, details, and paginated lists. |
+| Receivables dashboard | PostgreSQL aggregation grouped by currency; requires migrations to be applied. |
+| Business data isolation | Supabase Auth and row-level security policies are defined in the migrations. |
 | Collections Agent | Planned for Day 3; not available yet. |
-| PayPal Sandbox checkout, capture, and webhooks | Planned for Day 2; not available yet. |
+| PayPal checkout, capture, and webhooks | Day 2 code is implemented; Sandbox setup and end-to-end verification remain environment-dependent. |
 
 ## 🤖 The Collections Agent
 
@@ -167,7 +178,7 @@ The application does not currently include this agent workflow. Its design will 
 
 ## 💳 PayPal Integration
 
-PayPal is a planned Day 2 milestone and is not connected yet.
+The Day 2 PayPal integration creates private invoice payment links, sends order and capture requests from the server, verifies amounts and currency against stored invoice data, and reconciles successful captures. Webhook signatures are verified with PayPal and duplicate event IDs are recorded.
 
 The planned Sandbox integration will support:
 
@@ -178,13 +189,13 @@ The planned Sandbox integration will support:
 - Processing payment webhooks.
 - Updating invoice records after successful verification.
 
-Payment status is never changed simply because a customer clicks a button.
+Payment status is never changed simply because a customer clicks a button. A database transaction marks an attempt captured and its invoice paid only after the server verifies PayPal's completed capture.
 
-The database prevents an invoice from being marked paid unless a matching captured payment record exists. PayPal verification endpoints are part of the Day 2 milestone.
+The database prevents an invoice from being marked paid unless a matching captured payment record exists. See [README_DAY2.md](README_DAY2.md) for configuration and current verification limits.
 
 ## 🏗️ Architecture
 
-The diagram shows the planned end state. PayPal and the Collections Agent are later milestones; Day 1 currently covers the web app and Supabase foundation.
+The web app and PayPal server integration are implemented through Day 2. The Collections Agent remains planned and is not part of this release.
 
 ```text
                   LEDGERLOOP
@@ -266,7 +277,7 @@ The diagram shows the planned end state. PayPal and the Collections Agent are la
 - VS Code — Development environment.
 - Vercel — Planned application deployment.
 
-OpenAI, PayPal, and deployment integrations are planned and are not configured in the current Day 1 application.
+OpenAI and deployment integrations are planned. PayPal integration code is present, but its Sandbox app credentials and webhook configuration must be supplied locally.
 
 ## 🔐 Security & Reliability
 
@@ -306,7 +317,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Apply `supabase/migrations/20261109000100_initial_schema.sql` in the Supabase SQL Editor before creating an account. The migration creates the business, customer, invoice, payment-attempt, and audit-log tables and their access policies.
+Apply `supabase/migrations/20261109000100_initial_schema.sql` and then `supabase/migrations/20261110000100_paypal_support.sql` in the Supabase SQL Editor before using the app. The first migration creates the business, customer, invoice, payment-attempt, and audit-log tables and their access policies. The Day 2 migration adds payment links, webhook events, and server-side reconciliation functions.
 
 ### Environment Variables
 
@@ -316,6 +327,17 @@ Add the required credentials to `.env.local`:
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+
+# Server-only; never prefix with NEXT_PUBLIC_ or commit its value.
+SUPABASE_SERVICE_ROLE_KEY=
+
+# PayPal Developer Sandbox app and webhook values.
+PAYPAL_ENV=sandbox
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_WEBHOOK_ID=
+APP_URL=http://localhost:3000
 ```
 
 Never commit `.env.local` or expose secret keys in frontend code.
@@ -332,19 +354,17 @@ Open:
 http://localhost:3000
 ```
 
-With Supabase credentials missing or the migration unapplied, LedgerLoop shows setup guidance rather than demo records. See [README_DAY1.md](README_DAY1.md) for implementation status and verification notes.
+With Supabase credentials missing or migrations unapplied, LedgerLoop shows setup guidance rather than demo records. PayPal links and checkout require the server-only key and Sandbox app configuration. See [README_DAY1.md](README_DAY1.md) and [README_DAY2.md](README_DAY2.md) for implementation status and verification notes.
 
 ## 🗺️ Roadmap
 
-- [ ] Application foundation and authentication.
-- [ ] Invoice and customer management.
-- [ ] Receivables dashboard.
+- [x] Application foundation and authentication.
+- [x] Invoice and customer management.
+- [x] Receivables dashboard.
+- [x] PayPal order, capture, and webhook integration code (Sandbox end-to-end verification pending configuration).
 - [ ] Collections Agent with backend tool calling.
 - [ ] Overdue invoice analysis and prioritisation.
 - [ ] Personalised reminder generation.
-- [ ] PayPal Sandbox checkout integration.
-- [ ] Payment capture and verification.
-- [ ] Webhook processing and reconciliation.
 - [ ] Approval workflow and audit history.
 - [ ] Testing and deployment.
 - [ ] Documentation and demonstration.

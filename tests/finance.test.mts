@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { formatMoney, normalizeAmount, sumAmounts } from "../lib/finance/money.ts";
+import { toPayPalAmount } from "../lib/paypal/amount.ts";
+import { formatDate } from "../lib/finance/date.ts";
 
 test("normalizes amounts according to currency precision", () => {
   assert.equal(normalizeAmount("12", "USD"), "12.00");
@@ -18,4 +20,17 @@ test("adds decimal amounts without floating-point rounding", () => {
 test("formats large currency amounts exactly", () => {
   assert.equal(formatMoney("90071992547409.99", "USD"), "$90,071,992,547,409.99");
   assert.equal(formatMoney("1234", "JPY"), "¥1,234");
+});
+
+test("formats date-only values without shifting the calendar day", () => {
+  assert.equal(formatDate("2026-11-10"), "Nov 10, 2026");
+});
+
+test("formats PayPal amounts to the currency exponent without floating-point conversion", () => {
+  assert.equal(toPayPalAmount("19.900000", "USD"), "19.90");
+  assert.equal(toPayPalAmount("19", "JPY"), "19");
+  assert.equal(toPayPalAmount("1.234", "USD"), null);
+  assert.equal(toPayPalAmount("0.000000", "USD"), null);
+  assert.equal(toPayPalAmount("1.234", "KWD"), "1.234");
+  assert.equal(toPayPalAmount("1.00", "XXX"), null);
 });
