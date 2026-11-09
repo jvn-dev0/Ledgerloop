@@ -10,12 +10,12 @@
 
 **From unpaid invoice to verified payment.**
 
-An intelligent accounts receivable and payment recovery platform that helps businesses track outstanding invoices, prioritise collections, automate follow-ups, and manage payments through PayPal.
+An accounts receivable workspace for customer records, invoices, and currency-aware receivables. PayPal payments and the Collections Agent are planned for later milestones.
 
 <br/>
 
 ![Project Status](https://img.shields.io/badge/Status-In%20Development-00C2A8?style=for-the-badge)
-![Hackathon](https://img.shields.io/badge/Build-PayPal%20%2B%20AI-123C69?style=for-the-badge)
+![Stack](https://img.shields.io/badge/Stack-Next.js%20%2B%20Supabase-123C69?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-00C2A8?style=for-the-badge)
 
 <br/>
@@ -26,7 +26,8 @@ An intelligent accounts receivable and payment recovery platform that helps busi
 [Architecture](#-how-it-works) •
 [Tech Stack](#-technology-stack) •
 [Getting Started](#-getting-started) •
-[Roadmap](#-roadmap)
+[Roadmap](#-roadmap) •
+[Day 1 Update](README_DAY1.md)
 
 </div>
 
@@ -40,9 +41,9 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-At its core is the **LedgerLoop Collections Agent** — an AI-powered agent that analyses invoice records, identifies overdue payments, prioritises collection activities, and prepares personalised payment reminders.
+The Day 1 foundation supports customer and invoice management, with receivables summaries calculated from persisted invoice records. The **LedgerLoop Collections Agent** is planned for Day 3.
 
-With PayPal integration, customers can complete payments through a secure checkout flow, while LedgerLoop verifies successful transactions and updates invoice records.
+PayPal Sandbox checkout, capture verification, and reconciliation are planned for Day 2. The current application does not simulate payment activity.
 
 **Our goal:** Reduce manual accounts receivable work and make the journey from invoice creation to payment reconciliation simpler and more transparent.
 
@@ -63,11 +64,11 @@ These tasks consume time that business owners could spend serving customers and 
 
 ## 💡 Our Solution
 
-LedgerLoop connects invoice management, intelligent collection workflows, and PayPal payment processing.
+LedgerLoop is being built in milestones. Day 1 establishes customer and invoice management, database access controls, and receivables summaries. Day 2 adds PayPal payment processing; Day 3 adds the Collections Agent.
 
-Instead of manually reviewing every invoice, business owners can use the Collections Agent to understand their outstanding receivables and decide what to do next.
+The planned Collections Agent will help business owners review outstanding receivables and decide what to do next.
 
-The agent can:
+Planned agent capabilities:
 
 1. Retrieve invoice and customer information.
 2. Identify overdue and outstanding invoices.
@@ -83,28 +84,24 @@ The agent can:
 
 | Feature | Description |
 |---|---|
-| Invoice Management | Create, view, and manage customer invoices. |
-| Receivables Dashboard | Understand paid, pending, and overdue amounts. |
-| Collections Agent | Ask questions about invoices and outstanding payments. |
-| Smart Prioritisation | Identify which overdue invoices need attention first. |
-| Reminder Generation | Prepare personalised payment follow-up messages. |
-| PayPal Checkout | Enable customers to pay through PayPal Sandbox integration. |
-| Payment Verification | Verify payment status before updating invoice records. |
-| Reconciliation | Match verified transactions with their corresponding invoices. |
-| Approval Workflow | Allow business owners to approve important actions. |
-| Activity History | Maintain a record of agent actions and payment events. |
+| Customer management | Implemented in code; Supabase setup is required to verify persistence. |
+| Invoice management | Implemented in code; Supabase setup is required to verify persistence. |
+| Receivables dashboard | Database summary grouped by currency; requires the migration to be applied. |
+| Business data isolation | Supabase Auth and row-level security policies are defined in the migration. |
+| Collections Agent | Planned for Day 3; not available yet. |
+| PayPal Sandbox checkout, capture, and webhooks | Planned for Day 2; not available yet. |
 
 ## 🤖 The Collections Agent
 
-The AI agent is a core part of LedgerLoop, not just a chatbot.
+The AI agent is planned for Day 3 and is not implemented yet.
 
-It interacts with actual application data through controlled backend tools.
+When implemented, it will interact with application data through controlled backend tools.
 
 Example user instruction:
 
 > Show me all overdue invoices and tell me which customers I should follow up with first.
 
-The agent follows a controlled workflow:
+The planned agent workflow is:
 
 ```text
 User Request
@@ -140,15 +137,15 @@ Execute Approved Action
 Verify & Record Result
 ```
 
-The agent uses structured tools rather than inventing financial information.
+The application does not currently include this agent workflow. Its design will use structured tools rather than generated financial values.
 
 **Important design principle:** AI can interpret, analyse, and recommend. The database and verified PayPal responses determine actual balances and payment status.
 
 ## 💳 PayPal Integration
 
-PayPal is an essential part of the LedgerLoop payment workflow.
+PayPal is a planned Day 2 milestone and is not connected yet.
 
-The planned integration uses PayPal's developer platform and Sandbox environment to support:
+The planned Sandbox integration will support:
 
 - Creating PayPal payment orders.
 - Generating checkout experiences.
@@ -159,9 +156,11 @@ The planned integration uses PayPal's developer platform and Sandbox environment
 
 Payment status is never changed simply because a customer clicks a button.
 
-LedgerLoop updates an invoice to paid only after the backend verifies a successful payment.
+The database prevents an invoice from being marked paid unless a matching captured payment record exists. PayPal verification endpoints are part of the Day 2 milestone.
 
 ## 🏗️ Architecture
+
+The diagram shows the planned end state. PayPal and the Collections Agent are later milestones; Day 1 currently covers the web app and Supabase foundation.
 
 ```text
                   LEDGERLOOP
@@ -206,10 +205,10 @@ LedgerLoop updates an invoice to paid only after the backend verifies a successf
 <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind" />
 </p>
 
-- Next.js — Application framework.
-- React — User interface.
-- TypeScript — Type-safe application development.
-- Tailwind CSS — Responsive styling.
+- Next.js 16.4.5 — App Router application framework.
+- React 19.3.1 — User interface.
+- TypeScript 6.0.3 — Type-safe application development.
+- Tailwind CSS 4.3.5 — Responsive styling.
 
 ### Backend & Database
 
@@ -219,7 +218,7 @@ LedgerLoop updates an invoice to paid only after the backend verifies a successf
 
 - Node.js — Backend runtime.
 - TypeScript — Backend logic and typed integrations.
-- Supabase — Database and authentication services.
+- Supabase Auth and PostgreSQL — Authentication, database, and row-level security.
 - PostgreSQL — Persistent business, invoice, and payment data.
 
 ### AI & Payment Infrastructure
@@ -243,7 +242,7 @@ LedgerLoop updates an invoice to paid only after the backend verifies a successf
 - VS Code — Development environment.
 - Vercel — Planned application deployment.
 
-*The stack reflects the intended implementation. Individual integrations and features will be marked complete as they are implemented and tested.*
+OpenAI, PayPal, and deployment integrations are planned and are not configured in the current Day 1 application.
 
 ## 🔐 Security & Reliability
 
@@ -263,11 +262,9 @@ LedgerLoop is designed around the following principles:
 
 ### Prerequisites
 
-- Node.js and npm
+- Node.js 20.9 or later and npm
 - Git
-- Supabase account
-- OpenAI API key
-- PayPal Developer account
+- Supabase project (URL and publishable key)
 
 ### Installation
 
@@ -285,26 +282,16 @@ npm install
 cp .env.example .env.local
 ```
 
+Apply `supabase/migrations/20261109000100_initial_schema.sql` in the Supabase SQL Editor before creating an account. The migration creates the business, customer, invoice, payment-attempt, and audit-log tables and their access policies.
+
 ### Environment Variables
 
 Add the required credentials to `.env.local`:
 
 ```env
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# OpenAI
-OPENAI_API_KEY=
-
-# PayPal Sandbox
-PAYPAL_CLIENT_ID=
-PAYPAL_CLIENT_SECRET=
-PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Never commit `.env.local` or expose secret keys in frontend code.
@@ -321,7 +308,7 @@ Open:
 http://localhost:3000
 ```
 
-*Setup instructions, database migrations, and configuration details will be expanded as the implementation is completed.*
+With Supabase credentials missing or the migration unapplied, LedgerLoop shows setup guidance rather than demo records. See [README_DAY1.md](README_DAY1.md) for implementation status and verification notes.
 
 ## 🗺️ Roadmap
 
