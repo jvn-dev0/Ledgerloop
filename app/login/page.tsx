@@ -11,12 +11,21 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <main className="auth-wrap">
       <section className="auth-visual">
         <Link className="brand" href="/"><span className="brand-mark">L</span>LedgerLoop</Link>
-        <div className="auth-copy"><h1>Know what’s owed. Keep business moving.</h1><p>Bring customer records and invoice follow-up into one clear financial workspace.</p><div className="auth-highlight"><span>Receivables at a glance</span><span>Verified payment records</span></div></div>
+        <div className="auth-copy">
+          <p className="auth-kicker">Complete Financial Operations</p>
+          <h1>Financial work, kept in order.</h1>
+          <p>Know which invoices need attention and keep the customer context close at hand.</p>
+          <ul className="auth-benefits">
+            <li><span className="auth-benefit-index">01</span><span><strong>Customer records</strong><small>Contact details stay connected to invoices.</small></span></li>
+            <li><span className="auth-benefit-index">02</span><span><strong>Invoice status</strong><small>See what is due and what is overdue.</small></span></li>
+            <li><span className="auth-benefit-index">03</span><span><strong>Verified payments</strong><small>Confirmed captures update payment records.</small></span></li>
+          </ul>
+        </div>
         <div className="auth-foot">LedgerLoop · Complete Financial Operations</div>
       </section>
       <section className="auth-panel">
         <div className="auth-box">
-          <p className="eyebrow">Welcome back</p><h2>Sign in to LedgerLoop</h2><p>Use your business account to manage customers and invoices.</p>
+          <p className="eyebrow auth-eyebrow">Welcome back</p><h2>Sign in</h2><p className="auth-description">Use your business account to manage customers, invoices, and receivables.</p>
           {error && <div className="alert" role="alert">{error}</div>}
           {notice && <div className="notice" role="status">{notice}</div>}
           {!configured && <div className="alert">Supabase is not configured. <Link href="/setup">Open setup</Link>.</div>}

@@ -11,12 +11,21 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
     <main className="auth-wrap">
       <section className="auth-visual">
         <Link className="brand" href="/"><span className="brand-mark">L</span>LedgerLoop</Link>
-        <div className="auth-copy"><h1>Make receivables easier to manage.</h1><p>Create your business workspace and start with a clear record of customers and invoices.</p><div className="auth-highlight"><span>Private business data</span><span>Real records, no demo numbers</span></div></div>
+        <div className="auth-copy">
+          <p className="auth-kicker">Complete Financial Operations</p>
+          <h1>Start with a clear view of what is owed.</h1>
+          <p>Create a business workspace for the customers, invoices, and payments you manage.</p>
+          <ul className="auth-benefits">
+            <li><span className="auth-benefit-index">01</span><span><strong>Your business workspace</strong><small>Records are scoped to your signed-in business.</small></span></li>
+            <li><span className="auth-benefit-index">02</span><span><strong>Customer and invoice records</strong><small>Keep contact and billing details together.</small></span></li>
+            <li><span className="auth-benefit-index">03</span><span><strong>Receivables at a glance</strong><small>Review totals without sample transactions.</small></span></li>
+          </ul>
+        </div>
         <div className="auth-foot">LedgerLoop · Complete Financial Operations</div>
       </section>
       <section className="auth-panel">
         <div className="auth-box">
-          <p className="eyebrow">Get started</p><h2>Create your account</h2><p>Your business workspace is created securely when you sign up.</p>
+          <p className="eyebrow auth-eyebrow">Get started</p><h2>Create your account</h2><p className="auth-description">Your business workspace is created securely when you sign up.</p>
           {error && <div className="alert" role="alert">{error}</div>}
           {!configured && <div className="alert">Supabase is not configured. <Link href="/setup">Open setup</Link>.</div>}
           <form action={signUp} className="auth-form">
