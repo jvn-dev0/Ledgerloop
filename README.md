@@ -47,6 +47,30 @@ PayPal Sandbox checkout, capture verification, and reconciliation are planned fo
 
 **Our goal:** Reduce manual accounts receivable work and make the journey from invoice creation to payment reconciliation simpler and more transparent.
 
+## 📁 Project structure
+
+```text
+app/
+  (workspace)/       Authenticated dashboard, customer, invoice, and payment pages
+  actions/            Server actions for authentication and record changes
+  login/               Supabase Auth entry point
+  signup/              Supabase Auth entry point
+  setup/              Supabase configuration and migration guidance
+components/            Shared forms, headings, badges, and feedback states
+lib/
+  data/                Business-scoped database queries
+  finance/             Decimal-safe money utilities
+  supabase/            Server and request-scoped Supabase clients
+  validations/         Server-side form validation
+supabase/migrations/   PostgreSQL schema and Row Level Security policies
+tests/                 Finance unit tests
+types/                 Database and domain types
+README.md              Product overview and local setup
+README_DAY1.md         Day 1 implementation and verification notes
+```
+
+Local credentials belong in `.env.local`; generated dependencies and build/test output are excluded from Git by `.gitignore`.
+
 ## 🚨 The Problem
 
 Getting paid is not always as simple as sending an invoice.

@@ -33,7 +33,8 @@ The signup trigger creates one business record for each new auth user. If email 
 - `npm test` — passed (currency precision, decimal addition, and exact formatting).
 - `npm run build` — passed.
 - `npm audit --omit=dev` — passed with zero production dependency advisories.
-- Supabase migration and authenticated create/edit/persistence checks — not run; this checkout has no `.env.local` or Supabase project credentials.
+- The Supabase project URL and publishable key are configured in the local, Git-ignored `.env.local`.
+- Supabase migration and authenticated create/edit/persistence checks — not yet verified. At the last read-only check, Supabase returned `PGRST205` for `public.businesses`, so apply the migration and rerun these checks.
 - PayPal Sandbox — not implemented; scheduled for Day 2.
 - Collections Agent — not implemented; scheduled for Day 3.
 
