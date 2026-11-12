@@ -30,6 +30,7 @@ An accounts receivable workspace for customer records, invoices, currency-aware 
 [Day 1 Update](README_DAY1.md) •
 [Day 2 Update](README_DAY2.md) •
 [Day 3 Update](README_DAY3.md) •
+[Day 4 Update](README_DAY4.md) •
 [Performance Notes](docs/performance-and-complexity.md)
 
 </div>
@@ -44,7 +45,7 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history.
+Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, application-level error pages, responsive customer/invoice/payment views, invoice and payment status filters, and safer payment-state error handling.
 
 Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials. The agent uses persisted business data and indexed policy documents; it does not generate demo financial records or simulate payment activity.
 
@@ -59,6 +60,9 @@ app/
   api/                Customer search, PayPal routes, agent chat, approval, and policy-document APIs
   pay/[token]/         Public invoice checkout page
   login/, signup/      Supabase Auth entry points
+  auth/callback/       PKCE email confirmation and password-reset callback
+  forgot-password/     Password recovery request
+  reset-password/      Authenticated password update
   setup/               Supabase configuration and migration guidance
 components/
   dashboard/           Receivables metrics and summary views
@@ -81,6 +85,8 @@ README.md              Product overview and local setup
 README_DAY1.md         Day 1 implementation and verification notes
 README_DAY2.md         Day 2 payment implementation and setup notes
 README_DAY3.md         Day 3 collections agent and RAG setup notes
+README_DAY4.md         Day 4 reliability, recovery, and responsive UI notes
+.agents/skills/        Project-local UI/UX Pro Max guidance for Codex
 docs/                  Performance and complexity notes
 ```
 
@@ -103,7 +109,7 @@ These tasks consume time that business owners could spend serving customers and 
 
 ## 💡 Our Solution
 
-LedgerLoop is built in milestones. Day 1 establishes customer and invoice management, database access controls, and receivables summaries. Day 2 adds PayPal payment processing. Day 3 adds an owner-scoped collections assistant with these capabilities:
+LedgerLoop is built in milestones. Day 1 establishes customer and invoice management, database access controls, and receivables summaries. Day 2 adds PayPal payment processing. Day 3 adds an owner-scoped collections assistant with these capabilities. Day 4 improves account recovery, error handling, payment state checks, and responsive record browsing.
 
 1. Retrieve invoice and customer information.
 2. Identify overdue and outstanding invoices.
@@ -125,6 +131,8 @@ LedgerLoop is built in milestones. Day 1 establishes customer and invoice manage
 | Business data isolation | Supabase Auth and row-level security policies are defined in the migrations. |
 | Collections Agent | Day 3 code is implemented; it requires the Day 3 migration and a valid server-side Groq key. |
 | PayPal checkout, capture, and webhooks | Day 2 code is implemented; Sandbox setup and end-to-end verification remain environment-dependent. |
+| Account recovery and failure pages | Password reset uses Supabase Auth PKCE callbacks; route, global, and not-found pages provide recovery paths. Add the local callback URL to Supabase Auth's redirect allow-list. |
+| Responsive receivables workspace | Customer, invoice, and payment records adapt to small screens; invoice and payment history can be filtered by status. |
 
 ## 🤖 The Collections Agent
 
@@ -193,7 +201,7 @@ The database prevents an invoice from being marked paid unless a matching captur
 
 ## 🏗️ Architecture
 
-The web app, PayPal integration, and Day 3 collections workflow are implemented in the repository. Live finance workflows require the migrations to be applied to the connected Supabase project; the agent also requires a valid server-side Groq key.
+The web app, PayPal integration, and Day 3 collections workflow are implemented in the repository. Live finance workflows require the migrations to be applied to the connected Supabase project; the agent also requires a valid server-side Groq key. Day 4's account recovery flow also requires the application callback URL in Supabase's redirect allow-list.
 
 ```text
                   LEDGERLOOP
@@ -357,7 +365,7 @@ Open:
 http://localhost:3008
 ```
 
-With Supabase credentials missing or migrations unapplied, LedgerLoop shows setup guidance rather than demo records. The collections assistant needs the Day 3 migration, a valid Groq key, and a one-time local download of the embedding model. PayPal links and checkout require the server-only Supabase key and Sandbox app configuration. See [README_DAY1.md](README_DAY1.md), [README_DAY2.md](README_DAY2.md), and [README_DAY3.md](README_DAY3.md) for milestone details.
+With Supabase credentials missing or migrations unapplied, LedgerLoop shows setup guidance rather than demo records. The collections assistant needs the Day 3 migration, a valid Groq key, and a one-time local download of the embedding model. PayPal links and checkout require the server-only Supabase key and Sandbox app configuration. See [README_DAY1.md](README_DAY1.md), [README_DAY2.md](README_DAY2.md), [README_DAY3.md](README_DAY3.md), and [README_DAY4.md](README_DAY4.md) for milestone details.
 
 ## 🗺️ Roadmap
 
@@ -369,6 +377,7 @@ With Supabase credentials missing or migrations unapplied, LedgerLoop shows setu
 - [x] Overdue invoice analysis and deterministic prioritisation.
 - [x] Personalised reminder drafts for owner review.
 - [x] Approval workflow and persisted agent activity history.
+- [x] Password recovery, route error pages, responsive record views, and history filters.
 - [ ] Testing and deployment.
 - [ ] Documentation and demonstration.
 

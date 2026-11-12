@@ -11,7 +11,7 @@
     "build": "next build --webpack",
     "start": "next start -p 3008",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "tsc --project tsconfig.test.json && node --conditions=react-server --test .test-build/tests/finance.test.mjs .test-build/tests/agent.test.mjs .test-build/tests/rag.test.mjs"
   },
   "dependencies": {

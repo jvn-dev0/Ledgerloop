@@ -2,6 +2,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Invoice } from "@/types/database";
 
 export const LIST_PAGE_SIZE = 25;
+export const INVOICE_STATUS_FILTERS = ["pending", "overdue", "draft", "paid", "cancelled"] as const;
+export const PAYMENT_STATUS_FILTERS = ["created", "pending_approval", "approved", "captured", "failed", "cancelled"] as const;
+
+export type InvoiceStatusFilter = (typeof INVOICE_STATUS_FILTERS)[number];
+export type PaymentStatusFilter = (typeof PAYMENT_STATUS_FILTERS)[number];
+
+export function parseInvoiceStatusFilter(value?: string): InvoiceStatusFilter | undefined {
+  return INVOICE_STATUS_FILTERS.find((status) => status === value);
+}
+
+export function parsePaymentStatusFilter(value?: string): PaymentStatusFilter | undefined {
+  return PAYMENT_STATUS_FILTERS.find((status) => status === value);
+}
 
 export function parseListPage(value?: string) {
   if (!value || !/^[1-9]\d{0,4}$/.test(value)) return 1;
@@ -50,9 +63,11 @@ export async function getCustomers(supabase: SupabaseClient<Database>, businessI
   return request.range((page - 1) * LIST_PAGE_SIZE, page * LIST_PAGE_SIZE - 1);
 }
 
-export async function getInvoices(supabase: SupabaseClient<Database>, businessId: string, query = "", page = 1) {
+export async function getInvoices(supabase: SupabaseClient<Database>, businessId: string, query = "", page = 1, status?: InvoiceStatusFilter) {
   let request = supabase.from("invoices").select("*", { count: "exact" }).eq("business_id", businessId).order("created_at", { ascending: false });
   const needle = query.trim().replace(/[%_]/g, "").slice(0, 100);
   if (needle) request = request.ilike("invoice_number", `%${needle}%`);
+  if (status === "overdue") request = request.eq("status", "pending").lt("due_date", new Date().toISOString().slice(0, 10));
+  else if (status) request = request.eq("status", status);
   return request.range((page - 1) * LIST_PAGE_SIZE, page * LIST_PAGE_SIZE - 1);
 }

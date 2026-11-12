@@ -114,10 +114,20 @@ export async function POST(request: Request) {
     if (event.event_type === "PAYMENT.CAPTURE.DENIED") {
       const orderId = resource?.supplementary_data?.related_ids?.order_id;
       if (typeof orderId === "string") {
-        await admin.from("payment_attempts").update({ status: "failed" })
+        const { data: failedAttempt, error: deniedError } = await admin.from("payment_attempts").update({ status: "failed" })
           .eq("provider", "paypal")
           .eq("provider_order_id", orderId)
-          .in("status", ["created", "pending_approval", "approved"]);
+          .in("status", ["created", "pending_approval", "approved"])
+          .select("id")
+          .maybeSingle();
+        if (deniedError) throw new Error("The denied PayPal capture could not be recorded.");
+        if (!failedAttempt) {
+          await finishEvent(admin, event.id, "ignored", "No eligible LedgerLoop payment attempt matched this denial.");
+          return Response.json({ received: true });
+        }
+      } else {
+        await finishEvent(admin, event.id, "ignored", "The denied capture did not include a related LedgerLoop order reference.");
+        return Response.json({ received: true });
       }
       await finishEvent(admin, event.id, "processed", "Denied capture recorded; invoice remains unpaid.");
       return Response.json({ received: true });

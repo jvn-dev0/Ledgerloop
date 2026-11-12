@@ -6,12 +6,14 @@ export function PaginationControls({
   pageSize,
   totalItems,
   query,
+  filters,
 }: {
   basePath: string;
   currentPage: number;
   pageSize: number;
   totalItems: number;
   query?: string;
+  filters?: Record<string, string | undefined>;
 }) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   if (totalPages <= 1) return null;
@@ -19,6 +21,9 @@ export function PaginationControls({
   function href(page: number) {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
+    for (const [key, value] of Object.entries(filters ?? {})) {
+      if (value) params.set(key, value);
+    }
     params.set("page", String(page));
     return `${basePath}?${params.toString()}`;
   }

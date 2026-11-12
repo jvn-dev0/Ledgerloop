@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const items = [
   { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -13,18 +14,39 @@ const items = [
 
 export function WorkspaceNavigation() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <nav className="nav-list" aria-label="Main navigation">
-      {items.map((item) => {
-        const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
-        return (
-          <Link className={`nav-link${active ? " active" : ""}`} href={item.href} key={item.href} aria-current={active ? "page" : undefined}>
-            <NavIcon name={item.icon} />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
+    <div className="navigation-shell">
+      <button
+        className="mobile-nav-toggle"
+        type="button"
+        aria-expanded={mobileOpen}
+        aria-controls="workspace-primary-nav"
+        onClick={() => setMobileOpen((open) => !open)}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+          {mobileOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+        </svg>
+        <span>{mobileOpen ? "Close" : "Menu"}</span>
+      </button>
+      <nav id="workspace-primary-nav" className={`nav-list${mobileOpen ? " mobile-open" : ""}`} aria-label="Main navigation">
+        {items.map((item) => {
+          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+          return (
+            <Link
+              className={`nav-link${active ? " active" : ""}`}
+              href={item.href}
+              key={item.href}
+              aria-current={active ? "page" : undefined}
+              onClick={() => setMobileOpen(false)}
+            >
+              <NavIcon name={item.icon} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }
 

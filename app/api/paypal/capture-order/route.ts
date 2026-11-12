@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   try {
     invoice = await findCheckoutInvoice(body.token);
   } catch (error) {
-    console.error("PayPal capture could not load the invoice", error);
+    console.error("PayPal capture could not load the invoice", { name: error instanceof Error ? error.name : "unknown" });
     return Response.json({ error: "Payment service is not ready. Apply the database migration and try again." }, { status: 503 });
   }
   if (!invoice) return Response.json({ error: "This payment link is invalid or has expired." }, { status: 404 });
@@ -54,7 +54,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    await admin.from("payment_attempts").update({ status: "approved" }).eq("id", attempt.id).in("status", ["created", "pending_approval", "approved"]);
+    const { data: approvedAttempt, error: approvalError } = await admin.from("payment_attempts")
+      .update({ status: "approved" })
+      .eq("id", attempt.id)
+      .in("status", ["created", "pending_approval", "approved"])
+      .select("id")
+      .maybeSingle();
+    if (approvalError) {
+      console.error("PayPal approval state could not be recorded", { code: approvalError.code });
+      return Response.json({ error: "The payment state could not be verified. Return to checkout and try again." }, { status: 503 });
+    }
+    if (!approvedAttempt) {
+      return Response.json({ error: "This payment attempt is no longer eligible for capture." }, { status: 409 });
+    }
 
     let order: PayPalOrder;
     try {
@@ -90,12 +102,14 @@ export async function POST(request: Request) {
       p_currency: capture.amount.currency_code,
     });
     if (finalizeError) {
-      console.error("Verified PayPal capture could not be reconciled", finalizeError);
+      console.error("Verified PayPal capture could not be reconciled", { code: finalizeError.code ?? "unknown" });
       return Response.json({ error: "PayPal captured the payment, but LedgerLoop could not reconcile it. Contact the business owner." }, { status: 503 });
     }
     return Response.json({ status: "COMPLETED", captureID: capture.id, alreadyCaptured: finalized === false });
   } catch (error) {
-    console.error("PayPal capture failed", error instanceof PayPalRequestError ? { status: error.status, message: error.message } : error);
-    return Response.json({ error: error instanceof Error ? error.message : "PayPal could not capture this payment." }, { status: 502 });
+    console.error("PayPal capture failed", error instanceof PayPalRequestError
+      ? { status: error.status }
+      : { name: error instanceof Error ? error.name : "unknown" });
+    return Response.json({ error: "PayPal could not complete this payment. Try again or contact the business owner." }, { status: 502 });
   }
 }

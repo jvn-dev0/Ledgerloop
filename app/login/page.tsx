@@ -32,6 +32,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <form action={signIn} className="auth-form">
             <div className="field"><label htmlFor="email">Work email</label><input className="input" id="email" name="email" type="email" autoComplete="email" required /></div>
             <div className="field"><label htmlFor="password">Password</label><input className="input" id="password" name="password" type="password" autoComplete="current-password" minLength={8} required /></div>
+            <div className="auth-recovery"><Link href="/forgot-password">Forgot password?</Link></div>
             <button className="button" type="submit" disabled={!configured}>Sign in <span aria-hidden="true">→</span></button>
           </form>
           <div className="auth-switch">New to LedgerLoop? <Link href="/signup">Create an account</Link></div>

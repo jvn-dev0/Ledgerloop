@@ -31,7 +31,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       <section className="card">
         {result.error ? <div className="alert" role="alert">Customer records could not be loaded. Refresh and try again.</div> : result.data?.length ? (
           <div className="table-wrap"><table className="data-table"><thead><tr><th>Customer</th><th>Company</th><th>Email</th><th>Added</th><th><span className="sr-only">Details</span></th></tr></thead><tbody>
-            {result.data.map((customer) => <tr key={customer.id}><td className="primary-cell"><Link href={`/customers/${customer.id}`}>{customer.name}</Link></td><td>{customer.company_name || "—"}</td><td>{customer.email}</td><td>{formatDate(customer.created_at)}</td><td><Link className="text-link" href={`/customers/${customer.id}`}>View →</Link></td></tr>)}
+            {result.data.map((customer) => <tr key={customer.id}><td data-label="Customer" className="primary-cell"><Link href={`/customers/${customer.id}`}>{customer.name}</Link></td><td data-label="Company">{customer.company_name || "—"}</td><td data-label="Email">{customer.email}</td><td data-label="Added">{formatDate(customer.created_at)}</td><td data-label="Details"><Link className="text-link" href={`/customers/${customer.id}`}>View details</Link></td></tr>)}
           </tbody></table></div>
         ) : <EmptyState title={params.q ? "No matching customers" : "No customers yet"}>{params.q ? "Try another name, company, or email address." : "Add your first customer to create an invoice."}<div style={{ marginTop: 14 }}><Link className="button small" href="/customers/new">Add customer</Link></div></EmptyState>}
       </section>
