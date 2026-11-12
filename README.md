@@ -2,7 +2,7 @@
 
 <!-- HERO BANNER -->
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=0:0B132B,50:123C69,100:00C2A8&height=200&section=header&text=LedgerLoop&fontSize=65&fontColor=FFFFFF&animation=fadeIn&fontAlignY=40&desc=Complete%20Financial%20Operations&descAlignY=65&descSize=20" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=rect&color=0:172B24,50:28684F,100:D7B77A&height=200&section=header&text=LedgerLoop&fontSize=65&fontColor=FFFFFF&animation=fadeIn&fontAlignY=40&desc=Complete%20Financial%20Operations&descAlignY=65&descSize=20" width="100%" />
 
 # LedgerLoop
 
@@ -14,9 +14,9 @@ An accounts receivable workspace for customer records, invoices, currency-aware 
 
 <br/>
 
-![Project Status](https://img.shields.io/badge/Status-In%20Development-00C2A8?style=for-the-badge)
-![Stack](https://img.shields.io/badge/Stack-Next.js%20%2B%20Supabase-123C69?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-00C2A8?style=for-the-badge)
+![Project Status](https://img.shields.io/badge/Status-In%20Development-2F7659?style=for-the-badge)
+![Stack](https://img.shields.io/badge/Stack-Next.js%20%2B%20Supabase-172B24?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Not%20set-895B1D?style=for-the-badge)
 
 <br/>
 
@@ -400,7 +400,7 @@ Contributions, suggestions, and feedback are welcome!
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+No `LICENSE` file is included yet. Choose and add a license before distributing the project.
 
 ---
 
@@ -408,6 +408,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ### Built with purpose. Designed for better financial operations.
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0B132B,50:123C69,100:00C2A8&height=120&section=footer" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:172B24,50:28684F,100:D7B77A&height=120&section=footer" width="100%" />
 
 </div>

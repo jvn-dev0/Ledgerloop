@@ -41,7 +41,12 @@ export async function signUp(formData: FormData) {
   });
   if (error) {
     console.error("Account creation failed", { code: error.code ?? "unknown" });
-    redirect(`/signup?error=${encodeURIComponent("We could not create the account. Check the details and try again.")}`);
+    const message = error.code === "over_email_send_rate_limit"
+      ? "Confirmation emails are temporarily limited. Check your inbox or spam folder, then try again later."
+      : error.code === "email_address_invalid"
+        ? "Use a valid email address and try again."
+        : "We could not create the account. Check the details and try again.";
+    redirect(`/signup?error=${encodeURIComponent(message)}`);
   }
   if (data.session) redirect("/dashboard");
   redirect("/login?notice=Check%20your%20email%20to%20confirm%20your%20account,%20then%20sign%20in.");
