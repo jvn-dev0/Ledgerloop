@@ -51,4 +51,4 @@ npm run dev
 
 Open [http://localhost:3008](http://localhost:3008). Keep `SUPABASE_SECRET_KEY`, `GROQ_API_KEY`, and PayPal secrets server-side in `.env.local`; never commit their values or expose them through `NEXT_PUBLIC_` variables.
 
-See [the implementation audit](docs/day4-implementation-audit.md) and [the interface direction](docs/day4-design-system.md) for the codebase findings and visual decisions behind this milestone.
+See [the implementation audit](docs/day4-implementation-audit.md), [the factual release report](docs/day4-release-report.md), [the three-minute demo runbook](docs/day4-demo-script.md), and [the interface direction](docs/day4-design-system.md) for the codebase findings and visual decisions behind this milestone.

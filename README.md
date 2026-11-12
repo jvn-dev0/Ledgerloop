@@ -31,7 +31,9 @@ An accounts receivable workspace for customer records, invoices, currency-aware 
 [Day 2 Update](README_DAY2.md) •
 [Day 3 Update](README_DAY3.md) •
 [Day 4 Update](README_DAY4.md) •
-[Performance Notes](docs/performance-and-complexity.md)
+[Performance Notes](docs/performance-and-complexity.md) •
+[Day 4 Release Report](docs/day4-release-report.md) •
+[Three-Minute Demo Runbook](docs/day4-demo-script.md)
 
 </div>
 
@@ -89,7 +91,7 @@ README_DAY2.md         Day 2 payment implementation and setup notes
 README_DAY3.md         Day 3 collections agent and RAG setup notes
 README_DAY4.md         Day 4 reliability, recovery, and responsive UI notes
 .agents/skills/        Project-local UI/UX Pro Max guidance for Codex
-docs/                  Performance and complexity notes
+docs/                  Performance, release audit, and demo runbook
 ```
 
 Local credentials belong in `.env.local`; generated dependencies and build/test output are excluded from Git by `.gitignore`.
