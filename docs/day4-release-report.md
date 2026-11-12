@@ -9,7 +9,7 @@ This report distinguishes source implementation and local checks from hosted wor
 
 | Area | Status | Evidence and limits |
 |---|---|---|
-| Authentication | **IMPLEMENTED BUT NOT VERIFIED** | Supabase sign-up, sign-in, sign-out, confirmation callback, forgot-password, and reset flows exist. Auth pages respond locally, but no complete hosted lifecycle with a real test account has passed. |
+| Authentication | **IMPLEMENTED BUT NOT VERIFIED** | Supabase sign-up, sign-in, sign-out, confirmation callback/resend, forgot-password, and reset flows exist. Auth pages respond locally, but no complete hosted lifecycle with a real test account has passed. |
 | Customer and invoice CRUD | **IMPLEMENTED BUT NOT VERIFIED** | Server actions and queries use persisted Supabase records and business scope. The hosted schema must be confirmed before CRUD can be called end-to-end verified. |
 | Business isolation | **PARTIALLY COMPLETE** | Business-scoped queries and RLS policies are in source migrations. Hosted RLS behavior has not been tested with two businesses. |
 | Dashboard and receivables | **IMPLEMENTED BUT NOT VERIFIED** | Metrics, currency grouping, overdue queue, and approvals use database queries/RPCs. Hosted reporting functions are not freshly verified. |

@@ -39,6 +39,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <SubmitButton pendingLabel="Signing in…" disabled={!configured}>Sign in <span aria-hidden="true">→</span></SubmitButton>
           </form>
           <div className="auth-switch">New to LedgerLoop? <Link href="/signup">Create an account</Link></div>
+          <div className="auth-switch">Waiting for confirmation? <Link href="/resend-confirmation">Resend the email</Link></div>
         </div>
       </section>
       <LegalLinks className="auth-legal-links" />

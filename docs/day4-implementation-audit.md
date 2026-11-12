@@ -18,6 +18,7 @@ This audit records what is present in the checked-out source and what still need
 ## Implemented in source
 
 - Supabase Auth pages include sign-in, sign-up, password recovery, password update, and a PKCE callback.
+- Signup confirmation can be resent through a neutral-response page. Sign-in failures record only the provider error code and status server-side; provider messages and credentials are not shown.
 - The authenticated workspace includes dashboard, customer, invoice, payment, collections-assistant, and business profile settings pages. Customer and invoice create/edit/detail routes are present.
 - Invoice and payment lists have status filters and pagination. Invoice history can also sort by issue date, due date, and invoice number. The workspace has responsive navigation and record layouts.
 - App Router `not-found`, route error, and global error boundaries are present.
@@ -53,7 +54,7 @@ The checked-out repository contains four ordered SQL migrations under `supabase/
 ## Remaining release gaps
 
 - **Hosted schema:** Apply all four repository migrations in date order, then confirm the expected tables and RPCs are available. This is the primary end-to-end blocker.
-- **Auth lifecycle:** The Auth endpoint responds, but registration, confirmation, sign-in, sign-out, reset, and business creation have not been verified with a real test account.
+- **Auth lifecycle:** The Auth endpoint responds, and signup confirmation can be resent. Registration, confirmation, sign-in, sign-out, reset, and business creation have not been verified with a real test account. The latest sign-in error is no longer discarded: check the local Next server log for the safe error code/status if the retry still fails.
 - **Signup diagnostics:** The local server log records Supabase Auth codes `over_email_send_rate_limit` and `email_address_invalid`. Signup now gives safe, actionable messages for these two cases while keeping other errors generic. The rate-limited flow should be retried only after checking the inbox/spam folder and allowing the provider limit to reset.
 - **Payments:** The PayPal routes are implemented, but the current environment does not have a PayPal client secret, and no sandbox capture/webhook lifecycle has been exercised.
 - **AI provider:** The agent and RAG code exist, but no live provider request or hosted vector query was verified. Rotate the Groq key previously pasted into chat before using it again.

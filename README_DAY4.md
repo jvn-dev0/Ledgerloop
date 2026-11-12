@@ -9,6 +9,7 @@ Day 4 improves the existing LedgerLoop application across authentication, paymen
 - Password reset requests use Supabase Auth and a PKCE callback. The callback accepts only the in-app dashboard or reset-password destination, and reset requests use the same confirmation message whether or not the email exists.
 - Password updates require an authenticated recovery session, validate matching passwords, and sign out after a successful change. Supabase and PayPal error responses are not exposed in page URLs.
 - Sign-in, sign-up, and password recovery show pending feedback; password inputs include keyboard-accessible visibility controls.
+- Login failures log only the Supabase error code/status on the server. Users can request a new signup confirmation link from `/resend-confirmation`; the response does not reveal whether an account exists.
 - A skip link targets the main content on app routes, and the focused target is programmatically focusable. Assistant activity timestamps use an explicit UTC format.
 - Workspace Settings can update the business name and default currency for new invoices. The update is owner-scoped and existing invoice currencies remain unchanged.
 - `/privacy`, `/terms`, and `/cookies` now provide source-based implementation drafts, visibly labeled for owner and legal review. They avoid invented company identity and contact details; there is no cookie banner without a configured non-essential tracking tool, and no refund policy for merchant payments controlled through PayPal.

@@ -15,8 +15,28 @@ export async function signIn(formData: FormData) {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) redirect(`/login?error=${encodeURIComponent("Email or password was not accepted.")}`);
+  if (error) {
+    console.error("Sign in failed", { code: error.code ?? "unknown", status: error.status ?? "unknown" });
+    redirect(`/login?error=${encodeURIComponent("We could not sign you in. Check your email and password. If you just registered, confirm your email first.")}`);
+  }
   redirect("/dashboard");
+}
+
+export async function resendSignupConfirmation(formData: FormData) {
+  if (!hasSupabaseConfig()) redirect("/setup");
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    redirect("/resend-confirmation?error=Enter%20a%20valid%20email%20address.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: new URL("/auth/callback?next=/dashboard", getAppOrigin()).toString() },
+  });
+  if (error) console.error("Signup confirmation resend failed", { code: error.code ?? "unknown", status: error.status ?? "unknown" });
+  redirect("/resend-confirmation?notice=If%20this%20address%20has%20an%20account%20waiting%20for%20confirmation,%20a%20new%20link%20will%20arrive%20by%20email.");
 }
 
 export async function signUp(formData: FormData) {
