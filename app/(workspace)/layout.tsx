@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
 import { WorkspaceNavigation } from "@/components/layout/workspace-navigation";
+import { LegalLinks } from "@/components/legal/legal-links";
 import { requireWorkspace } from "@/lib/data/workspace";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ export default async function WorkspaceLayout({ children }: Readonly<{ children:
       <section className="workspace">
         <header className="topbar"><span className="breadcrumb">Workspace <span aria-hidden="true">/</span> Ledger</span><div className="topbar-right"><span><i className="status-dot" />Secure workspace</span><span>{business.default_currency}</span></div></header>
         {children}
+        <footer className="workspace-legal-footer"><LegalLinks /></footer>
       </section>
     </div>
   );

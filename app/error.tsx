@@ -9,7 +9,7 @@ export default function ErrorBoundary({ error, retry }: { error: Error & { diges
   }, [error]);
 
   return (
-    <main className="error-screen" role="alert">
+    <main id="main-content" tabIndex={-1} className="error-screen" role="alert">
       <div className="error-mark" aria-hidden="true">L</div>
       <p className="eyebrow">LedgerLoop workspace</p>
       <h1>This page could not load.</h1>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requestPasswordReset } from "@/app/actions/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { hasSupabaseConfig } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function ForgotPasswordPage({ searchParams }: { searchParams: Promise<{ error?: string; notice?: string }> }) {
   const [{ error, notice }, configured] = await Promise.all([searchParams, Promise.resolve(hasSupabaseConfig())]);
   return (
-    <main className="auth-wrap">
+    <main id="main-content" tabIndex={-1} className="auth-wrap">
       <section className="auth-visual">
         <Link className="brand" href="/login"><span className="brand-mark">L</span>LedgerLoop</Link>
         <div className="auth-copy">
@@ -26,8 +27,8 @@ export default async function ForgotPasswordPage({ searchParams }: { searchParam
           {notice && <div className="notice" role="status">{notice}</div>}
           {!configured && <div className="alert" role="alert">Supabase is not configured. <Link href="/setup">Open setup</Link>.</div>}
           <form action={requestPasswordReset} className="auth-form">
-            <div className="field"><label htmlFor="email">Work email</label><input className="input" id="email" name="email" type="email" autoComplete="email" required /></div>
-            <button className="button" type="submit" disabled={!configured}>Send reset email</button>
+            <div className="field"><label htmlFor="email">Work email</label><input className="input" id="email" name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required /></div>
+            <SubmitButton pendingLabel="Sending reset email…" disabled={!configured}>Send reset email</SubmitButton>
           </form>
           <div className="auth-switch"><Link href="/login">Return to sign in</Link></div>
         </div>

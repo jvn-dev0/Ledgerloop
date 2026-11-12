@@ -21,7 +21,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     redirect(`/customers${query.size ? `?${query.toString()}` : ""}`);
   }
   return (
-    <main className="main-content">
+    <main id="main-content" tabIndex={-1} className="main-content">
       <PageHeading eyebrow="Relationship management" title="Customers" subtitle="Keep customer details organized alongside the work you invoice." action={<Link className="button" href="/customers/new"><span aria-hidden="true">＋</span> Add customer</Link>} />
       <QueryFeedback error={params.error} notice={params.notice} />
       <div className="toolbar">

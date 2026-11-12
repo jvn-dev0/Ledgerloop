@@ -14,7 +14,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
       : "LedgerLoop does not use demo records. Configure a Supabase project to continue.";
 
   return (
-    <main className="auth-wrap">
+    <main id="main-content" tabIndex={-1} className="auth-wrap">
       <section className="auth-visual">
         <Link className="brand" href="/"><span className="brand-mark">L</span>LedgerLoop</Link>
         <div className="auth-copy"><h1>Start with a reliable ledger.</h1><p>Connect your Supabase project to enable secure accounts, customer records, and invoice data.</p></div>

@@ -45,7 +45,7 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, application-level error pages, responsive customer/invoice/payment views, customer balances and histories, dashboard overdue and approval queues, invoice status filters and date/number sorting, payment reconciliation status against verified captures, bounded and rate-limited agent/document APIs, safer payment-state error handling, and a forest-and-ivory workspace palette.
+Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, accessible password visibility and submission feedback, application-level error pages, responsive customer/invoice/payment views, business name and default invoice currency settings, customer balances and histories, dashboard overdue and approval queues, invoice status filters and date/number sorting, payment reconciliation status against verified captures, bounded and rate-limited agent/document APIs, safer payment-state error handling, and a forest-and-ivory workspace palette.
 
 Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials. The agent uses persisted business data and indexed policy documents; it does not generate demo financial records or simulate payment activity.
 
@@ -63,11 +63,13 @@ app/
   auth/callback/       PKCE email confirmation and password-reset callback
   forgot-password/     Password recovery request
   reset-password/      Authenticated password update
+  privacy/, terms/, cookies/  Product and cookie policy implementation drafts
   setup/               Supabase configuration and migration guidance
 components/
   dashboard/           Receivables metrics and summary views
   invoices/            Customer picker, invoice forms, and payment-link controls
   layout/              Workspace navigation
+  legal/               Shared legal page layout and links
   payments/            PayPal checkout button
   ui/                  Shared feedback, pagination, loading, and status components
 lib/
@@ -91,6 +93,8 @@ docs/                  Performance and complexity notes
 ```
 
 Local credentials belong in `.env.local`; generated dependencies and build/test output are excluded from Git by `.gitignore`.
+
+The `/privacy`, `/terms`, and `/cookies` pages are visibly marked implementation drafts. They describe current source behavior and require the operator's identity, support contact, retention policy, jurisdiction, and qualified legal review before public use. LedgerLoop does not define or control merchant refunds, so the repository does not claim to offer refunds.
 
 ## 🚨 The Problem
 

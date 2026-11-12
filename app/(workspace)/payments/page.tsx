@@ -43,7 +43,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
   }
 
   return (
-    <main className="main-content">
+    <main id="main-content" tabIndex={-1} className="main-content">
       <PageHeading eyebrow="Transactions" title="Payments" subtitle="Compare each saved PayPal attempt with its invoice. Reconciliation requires a verified capture and matching paid invoice amount and currency." />
       <div className="toolbar">
         <form className="filter-form payment-filter" action="/payments" method="get">

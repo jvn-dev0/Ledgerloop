@@ -16,12 +16,12 @@ export default async function DashboardPage() {
     data = await getDashboardData(supabase, business.id);
   } catch (error) {
     console.error("Dashboard data could not be loaded", { name: error instanceof Error ? error.name : "unknown" });
-    return <main className="main-content"><PageHeading eyebrow="Overview" title="Dashboard" subtitle="Your receivables at a glance." /><div className="alert" role="alert">Dashboard records could not be loaded. Confirm that the Supabase migration has been applied, then refresh.</div></main>;
+    return <main id="main-content" tabIndex={-1} className="main-content"><PageHeading eyebrow="Overview" title="Dashboard" subtitle="Your receivables at a glance." /><div className="alert" role="alert">Dashboard records could not be loaded. Confirm that the Supabase migration has been applied, then refresh.</div></main>;
   }
 
   const hasInvoices = data.summary.some((row) => row.draft_count + row.pending_count + row.paid_count + row.cancelled_count > 0);
   return (
-    <main className="main-content">
+      <main id="main-content" tabIndex={-1} className="main-content">
       <PageHeading eyebrow="Overview" title="Dashboard" subtitle="A clear view of invoices issued, payments recorded, and amounts still due." action={<Link className="button" href="/invoices/new">＋ New invoice</Link>} />
       {!hasInvoices ? <section className="card"><EmptyState title="Your receivables start here">There are no invoices in this workspace yet. Add a real customer and create an invoice to see your financial summary.<div className="empty-actions"><Link className="button secondary small" href="/customers/new">Add customer</Link><Link className="button small" href="/invoices/new">Create invoice</Link></div></EmptyState></section> : data.summary.map((row) => {
         const statusRows = [

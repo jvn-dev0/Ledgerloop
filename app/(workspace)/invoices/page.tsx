@@ -35,7 +35,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <main className="main-content">
+    <main id="main-content" tabIndex={-1} className="main-content">
       <PageHeading eyebrow="Billing" title="Invoices" subtitle="Create, review, and track outstanding customer invoices." action={<Link className="button" href="/invoices/new"><span aria-hidden="true">＋</span> New invoice</Link>} />
       <QueryFeedback error={params.error ?? (invoicesResult.error ? "Invoice records could not be loaded." : customersResult.error ? "Customer details could not be loaded." : undefined)} notice={params.notice} />
       <div className="toolbar">

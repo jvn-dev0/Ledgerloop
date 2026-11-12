@@ -1,6 +1,8 @@
 const MAX_SCALE = 6;
 const AMOUNT_PATTERN = /^(?:0|[1-9]\d{0,13})(?:\.\d{1,6})?$/;
 
+export const SUPPORTED_CURRENCIES = ["USD", "EUR", "GBP", "INR", "CAD", "AUD", "JPY", "KWD"] as const;
+
 export function currencyScale(currency: string) {
   try {
     return new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;

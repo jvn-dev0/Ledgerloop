@@ -25,7 +25,7 @@ export default async function CustomerDetailPage({ params, searchParams }: { par
   const { data: customer, error } = await supabase.from("customers").select("*").eq("id", id).eq("business_id", business.id).maybeSingle();
   if (error) {
     console.error("Customer detail query failed", { code: error.code ?? "unknown" });
-    return <main className="main-content"><div className="alert" role="alert">Customer details could not be loaded. Try again.</div></main>;
+    return <main id="main-content" tabIndex={-1} className="main-content"><div className="alert" role="alert">Customer details could not be loaded. Try again.</div></main>;
   }
   if (!customer) notFound();
   const page = parseListPage(feedback.page);
@@ -43,7 +43,7 @@ export default async function CustomerDetailPage({ params, searchParams }: { par
   if (page > totalPages) redirect(`/customers/${id}${totalPages > 1 ? `?page=${totalPages}` : ""}`);
 
   return (
-    <main className="main-content">
+    <main id="main-content" tabIndex={-1} className="main-content">
       <PageHeading eyebrow="Customer record" title={customer.name} subtitle={customer.company_name || "Customer details and associated invoices."} action={<Link className="button" href={`/customers/${customer.id}/edit`}>Edit customer</Link>} />
       <QueryFeedback error={feedback.error} notice={feedback.notice} />
       <section className="customer-summary-grid" aria-label="Customer receivables summary">

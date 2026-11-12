@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { signIn } from "@/app/actions/auth";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { LegalLinks } from "@/components/legal/legal-links";
 import { hasSupabaseConfig } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +11,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { error, notice } = await searchParams;
   const configured = hasSupabaseConfig();
   return (
-    <main className="auth-wrap">
+    <main id="main-content" tabIndex={-1} className="auth-wrap">
       <section className="auth-visual">
         <Link className="brand" href="/"><span className="brand-mark">L</span>LedgerLoop</Link>
         <div className="auth-copy">
@@ -30,14 +33,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           {notice && <div className="notice" role="status">{notice}</div>}
           {!configured && <div className="alert">Supabase is not configured. <Link href="/setup">Open setup</Link>.</div>}
           <form action={signIn} className="auth-form">
-            <div className="field"><label htmlFor="email">Work email</label><input className="input" id="email" name="email" type="email" autoComplete="email" required /></div>
-            <div className="field"><label htmlFor="password">Password</label><input className="input" id="password" name="password" type="password" autoComplete="current-password" minLength={8} required /></div>
+            <div className="field"><label htmlFor="email">Work email</label><input className="input" id="email" name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required /></div>
+            <div className="field"><label htmlFor="password">Password</label><PasswordInput id="password" name="password" autoComplete="current-password" minLength={8} required /></div>
             <div className="auth-recovery"><Link href="/forgot-password">Forgot password?</Link></div>
-            <button className="button" type="submit" disabled={!configured}>Sign in <span aria-hidden="true">→</span></button>
+            <SubmitButton pendingLabel="Signing in…" disabled={!configured}>Sign in <span aria-hidden="true">→</span></SubmitButton>
           </form>
           <div className="auth-switch">New to LedgerLoop? <Link href="/signup">Create an account</Link></div>
         </div>
       </section>
+      <LegalLinks className="auth-legal-links" />
     </main>
   );
 }

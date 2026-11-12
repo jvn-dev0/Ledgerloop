@@ -5,6 +5,7 @@ import { getPayPalCheckoutConfig } from "@/lib/paypal/server";
 import { hasSupabaseAdminConfig } from "@/lib/supabase/env";
 import { PayPalCheckout } from "@/components/payments/paypal-checkout";
 import { formatDate } from "@/lib/finance/date";
+import { LegalLinks } from "@/components/legal/legal-links";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export default async function PayInvoicePage({ params }: { params: Promise<{ tok
   const dueDate = formatDate(invoice.due_date, "long");
 
   return (
-    <main className="checkout-page">
+    <main id="main-content" tabIndex={-1} className="checkout-page">
       <header className="checkout-brand"><span className="brand-mark">L</span><span>LedgerLoop</span></header>
       <div className="checkout-layout">
         <section className="checkout-intro">
@@ -51,11 +52,11 @@ export default async function PayInvoicePage({ params }: { params: Promise<{ tok
           <p className="checkout-security">{paypal?.environment === "live" ? "Checkout is processed by PayPal. LedgerLoop does not store card details." : "Checkout runs in PayPal Sandbox during testing. LedgerLoop does not store card details."}</p>
         </section>
       </div>
-      <footer className="checkout-footer">A payment receipt is confirmed only after PayPal reports a successful capture.</footer>
+      <footer className="checkout-footer">A payment receipt is confirmed only after PayPal reports a successful capture.<LegalLinks className="checkout-legal-links" /></footer>
     </main>
   );
 }
 
 function CheckoutUnavailable({ message }: { message: string }) {
-  return <main className="checkout-page"><header className="checkout-brand"><span className="brand-mark">L</span><span>LedgerLoop</span></header><section className="checkout-card checkout-unavailable"><h1>Checkout unavailable</h1><p>{message}</p></section></main>;
+  return <main id="main-content" tabIndex={-1} className="checkout-page"><header className="checkout-brand"><span className="brand-mark">L</span><span>LedgerLoop</span></header><section className="checkout-card checkout-unavailable"><h1>Checkout unavailable</h1><p>{message}</p></section><footer className="checkout-footer"><LegalLinks className="checkout-legal-links" /></footer></main>;
 }

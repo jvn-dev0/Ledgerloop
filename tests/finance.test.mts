@@ -3,6 +3,7 @@ import test from "node:test";
 import { formatMoney, normalizeAmount, sumAmounts } from "../lib/finance/money.ts";
 import { toPayPalAmount } from "../lib/paypal/amount.ts";
 import { formatDate, formatDateTime } from "../lib/finance/date.ts";
+import { parseBusinessSettings } from "../lib/validations/forms.ts";
 
 test("normalizes amounts according to currency precision", () => {
   assert.equal(normalizeAmount("12", "USD"), "12.00");
@@ -10,6 +11,18 @@ test("normalizes amounts according to currency precision", () => {
   assert.equal(normalizeAmount("12.01", "JPY"), null);
   assert.equal(normalizeAmount("0", "USD"), null);
   assert.equal(normalizeAmount("1e4", "USD"), null);
+});
+
+test("business settings validation accepts a name and supported currency", () => {
+  const valid = new FormData();
+  valid.set("name", "Northstar Studio");
+  valid.set("default_currency", "inr");
+  assert.deepEqual(parseBusinessSettings(valid), { ok: true, data: { name: "Northstar Studio", default_currency: "INR" } });
+
+  const invalidCurrency = new FormData();
+  invalidCurrency.set("name", "Northstar Studio");
+  invalidCurrency.set("default_currency", "not-a-currency");
+  assert.equal(parseBusinessSettings(invalidCurrency).ok, false);
 });
 
 test("adds decimal amounts without floating-point rounding", () => {

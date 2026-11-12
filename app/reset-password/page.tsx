@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { updatePassword } from "@/app/actions/auth";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { hasSupabaseConfig } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,7 +18,7 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
   }
 
   return (
-    <main className="auth-wrap">
+    <main id="main-content" tabIndex={-1} className="auth-wrap">
       <section className="auth-visual">
         <Link className="brand" href="/login"><span className="brand-mark">L</span>LedgerLoop</Link>
         <div className="auth-copy">
@@ -35,9 +37,9 @@ export default async function ResetPasswordPage({ searchParams }: { searchParams
           {configured && recoverySession ? <>
             <p className="auth-description">Use at least 8 characters. You’ll sign in again after the password is updated.</p>
             <form action={updatePassword} className="auth-form">
-              <div className="field"><label htmlFor="password">New password</label><input className="input" id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required /></div>
-              <div className="field"><label htmlFor="confirm_password">Confirm new password</label><input className="input" id="confirm_password" name="confirm_password" type="password" autoComplete="new-password" minLength={8} maxLength={128} required /></div>
-              <button className="button" type="submit">Update password</button>
+              <div className="field"><label htmlFor="password">New password</label><PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} maxLength={128} required /></div>
+              <div className="field"><label htmlFor="confirm_password">Confirm new password</label><PasswordInput id="confirm_password" name="confirm_password" autoComplete="new-password" minLength={8} maxLength={128} required /></div>
+              <SubmitButton pendingLabel="Updating password…">Update password</SubmitButton>
             </form>
           </> : configured ? <>
             <p className="auth-description">Open the latest reset email to continue. If the link expired, request a new one.</p>

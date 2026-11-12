@@ -14,7 +14,7 @@ export default async function InvoiceDetailPage({ params, searchParams }: { para
   const { data: invoice, error } = await supabase.from("invoices").select("*").eq("id", id).eq("business_id", business.id).maybeSingle();
   if (error) {
     console.error("Invoice detail query failed", error);
-    return <main className="main-content"><div className="alert" role="alert">Invoice details could not be loaded. Try again.</div></main>;
+    return <main id="main-content" tabIndex={-1} className="main-content"><div className="alert" role="alert">Invoice details could not be loaded. Try again.</div></main>;
   }
   if (!invoice) notFound();
   const { data: customer, error: customerError } = await supabase.from("customers").select("id, name, email, company_name").eq("id", invoice.customer_id).eq("business_id", business.id).maybeSingle();
@@ -22,7 +22,7 @@ export default async function InvoiceDetailPage({ params, searchParams }: { para
   const overdue = invoice.status === "pending" && invoice.due_date < new Date().toISOString().slice(0, 10);
 
   return (
-    <main className="main-content">
+      <main id="main-content" tabIndex={-1} className="main-content">
       <PageHeading eyebrow="Invoice record" title={invoice.invoice_number} subtitle={invoice.description} action={invoice.status === "paid" ? undefined : <Link className="button" href={`/invoices/${invoice.id}/edit`}>Edit invoice</Link>} />
       <QueryFeedback error={feedback.error ?? (customerError ? "Customer details could not be loaded." : undefined)} notice={feedback.notice} />
       <div className="detail-grid">

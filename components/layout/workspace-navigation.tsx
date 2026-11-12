@@ -10,6 +10,7 @@ const items = [
   { href: "/invoices", label: "Invoices", icon: "invoices" },
   { href: "/payments", label: "Payments", icon: "payments" },
   { href: "/assistant", label: "Collections", icon: "agent" },
+  { href: "/settings", label: "Settings", icon: "settings" },
 ] as const;
 
 export function WorkspaceNavigation() {
@@ -57,6 +58,7 @@ function NavIcon({ name }: { name: (typeof items)[number]["icon"] }) {
     invoices: <><path d="M6 3.5h8l4 4V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" /><path d="M14 3.5v4h4M8 12h8M8 16h8" /></>,
     payments: <><path d="M4 8h13.5a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h11" /><path d="m14 4 4 4-4 4M16 14l4 4-4 4" /></>,
     agent: <><path d="M12 3.5v3M5 7.5h14v11H5z" /><path d="M8 12h.01M16 12h.01M9 15c.8.7 1.8 1 3 1s2.2-.3 3-1" /><path d="M3.5 11v4M20.5 11v4" /></>,
+    settings: <><circle cx="12" cy="12" r="3.5" /><path d="M12 2.75v2.1m0 14.3v2.1m9.25-9.25h-2.1m-14.3 0h-2.1m15.79-6.54-1.49 1.49m-10.1 10.1-1.49 1.49m13.08 0-1.49-1.49m-10.1-10.1L5.46 5.46" /></>,
   };
 
   return <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;

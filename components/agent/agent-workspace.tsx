@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
+import { formatDateTime } from "@/lib/finance/date";
 
 type Message = { id: string; role: "user" | "assistant"; content: string };
 type DocumentRecord = { id: string; name: string; mime_type: string; chunk_count: number; updated_at: string };
@@ -227,7 +228,7 @@ export function AgentWorkspace(props: {
   }
 
   return (
-    <main className="main-content agent-main">
+    <main id="main-content" tabIndex={-1} className="main-content agent-main">
       <div className="page-heading">
         <div>
           <p className="eyebrow">FINANCIAL OPERATIONS / COLLECTIONS</p>
@@ -311,7 +312,7 @@ export function AgentWorkspace(props: {
               <article className="agent-approval-item" key={approval.id}>
                 <div className="agent-approval-item-head"><strong>{approval.invoice_number}</strong><span className={`approval-status ${approval.status}`}>{approval.status}</span></div>
                 <p>{approval.reason}</p>
-                <small>Payment link · Requested {new Date(approval.created_at).toLocaleDateString()}</small>
+                <small>Payment link · Requested {formatDateTime(approval.created_at)}</small>
                 {approval.status === "pending" && <div className="agent-approval-actions"><button type="button" className="button small" onClick={() => void decideApproval(approval.id, "approve")}>Approve and prepare link</button><button type="button" className="button secondary small" onClick={() => void decideApproval(approval.id, "reject")}>Reject</button></div>}
                 {approval.status === "executed" && paymentLinkFromResult(approval.result) && <a className="agent-payment-link" href={paymentLinkFromResult(approval.result) as string} target="_blank" rel="noreferrer">Open prepared PayPal link ↗</a>}
               </article>
@@ -332,12 +333,12 @@ export function AgentWorkspace(props: {
               <button type="submit" className="button secondary" disabled={!props.databaseReady || uploading}>{uploading ? "Extracting and indexing…" : selectedDocumentId ? "Update policy" : "Add policy"}</button>
               <small>Text, Markdown, or searchable PDF · up to 10 MB</small>
             </form>
-            <div className="agent-document-list">{documents.map((document) => <div className="agent-document-row" key={document.id}><span className="agent-document-type">{document.mime_type === "application/pdf" ? "PDF" : document.mime_type === "text/markdown" ? "MD" : "TXT"}</span><div><strong>{document.name}</strong><small>{document.chunk_count} searchable sections · updated {new Date(document.updated_at).toLocaleDateString()}</small></div><button type="button" aria-label={`Delete ${document.name}`} onClick={() => void deleteDocument(document.id)} disabled={!props.databaseReady || uploading}>×</button></div>)}{documents.length === 0 && <p className="agent-side-empty">No policy documents added yet.</p>}</div>
+            <div className="agent-document-list">{documents.map((document) => <div className="agent-document-row" key={document.id}><span className="agent-document-type">{document.mime_type === "application/pdf" ? "PDF" : document.mime_type === "text/markdown" ? "MD" : "TXT"}</span><div><strong>{document.name}</strong><small>{document.chunk_count} searchable sections · updated {formatDate(document.updated_at)}</small></div><button type="button" aria-label={`Delete ${document.name}`} onClick={() => void deleteDocument(document.id)} disabled={!props.databaseReady || uploading}>×</button></div>)}{documents.length === 0 && <p className="agent-side-empty">No policy documents added yet.</p>}</div>
           </section>
 
           <section className="agent-panel agent-activity-panel">
             <header className="agent-panel-head"><div><span className="agent-kicker">AUDIT TRAIL</span><h2>Recent agent activity</h2></div></header>
-            {activity.length === 0 ? <p className="agent-side-empty">Tool activity appears here after a request is processed.</p> : <div className="agent-activity-list">{activity.slice(0, 8).map((item) => <div className="agent-activity-row" key={item.id}><span className={`agent-activity-dot ${item.status}`} /><div><strong>{toolLabels[item.tool_name] ?? item.tool_name}</strong><small>{new Date(item.created_at).toLocaleString()}</small></div><span>{item.status === "completed" ? `${item.duration_ms ?? 0} ms` : item.status}</span></div>)}</div>}
+            {activity.length === 0 ? <p className="agent-side-empty">Tool activity appears here after a request is processed.</p> : <div className="agent-activity-list">{activity.slice(0, 8).map((item) => <div className="agent-activity-row" key={item.id}><span className={`agent-activity-dot ${item.status}`} aria-hidden="true" /><div><strong>{toolLabels[item.tool_name] ?? item.tool_name}</strong><small>{formatDateTime(item.created_at)}</small></div><span>{item.status === "completed" ? `${item.duration_ms ?? 0} ms` : item.status}</span></div>)}</div>}
           </section>
         </aside>
       </div>

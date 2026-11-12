@@ -22,6 +22,11 @@ export type InvoiceInput = {
   status: "draft" | "pending" | "cancelled";
 };
 
+export type BusinessSettingsInput = {
+  name: string;
+  default_currency: string;
+};
+
 function field(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
@@ -29,6 +34,14 @@ function field(formData: FormData, key: string) {
 
 function optional(value: string) {
   return value ? value : null;
+}
+
+export function parseBusinessSettings(formData: FormData): ValidationResult<BusinessSettingsInput> {
+  const name = field(formData, "name");
+  const defaultCurrency = field(formData, "default_currency").toUpperCase();
+  if (name.length < 1 || name.length > 120) return { ok: false, error: "Enter a business name under 120 characters." };
+  if (!isCurrency(defaultCurrency)) return { ok: false, error: "Choose a valid ISO currency code." };
+  return { ok: true, data: { name, default_currency: defaultCurrency } };
 }
 
 export function parseCustomer(formData: FormData): ValidationResult<CustomerInput> {

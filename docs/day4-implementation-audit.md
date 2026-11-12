@@ -10,7 +10,7 @@ This audit records what is present in the checked-out source and what still need
 
 - The project uses the Next.js App Router. Current package ranges resolve to Next.js `16.4.5`, React `19.3.1`, TypeScript `6.0.3`, Tailwind CSS `4.3.5`, and Supabase JS `2.119.0`.
 - `app/` contains authentication, setup, dashboard, customer, invoice, payment, assistant, and public payment-link routes. API routes cover the collections agent, policy documents, customer search, and PayPal operations.
-- `components/` contains workspace navigation, invoice and customer forms, dashboard summaries, payment controls, status, pagination, and feedback UI. `lib/` contains business-scoped Supabase access, finance helpers, PayPal, the agent, and RAG/document ingestion.
+- `components/` contains workspace navigation, invoice and customer forms, dashboard summaries, payment controls, status, pagination, legal pages, and feedback UI. `lib/` contains business-scoped Supabase access, finance helpers, PayPal, the agent, and RAG/document ingestion.
 - `supabase/migrations/` has Day 1–4 schema migrations. `tests/` has unit tests for finance, agent, RAG, and bounded request-body handling.
 - `ui-ux-pro-max-cli@2.15.0` is installed globally. Its Codex skill files are present under `.agents/skills/`.
 - `.env.local` is ignored by Git. This report contains no credential values.
@@ -18,20 +18,23 @@ This audit records what is present in the checked-out source and what still need
 ## Implemented in source
 
 - Supabase Auth pages include sign-in, sign-up, password recovery, password update, and a PKCE callback.
-- The authenticated workspace includes dashboard, customer, invoice, payment, and collections-assistant pages. Customer and invoice create/edit/detail routes are present.
+- The authenticated workspace includes dashboard, customer, invoice, payment, collections-assistant, and business profile settings pages. Customer and invoice create/edit/detail routes are present.
 - Invoice and payment lists have status filters and pagination. Invoice history can also sort by issue date, due date, and invoice number. The workspace has responsive navigation and record layouts.
 - App Router `not-found`, route error, and global error boundaries are present.
 - Day 1–3 migrations define business-scoped records and RLS, invoice/payment constraints, PayPal reconciliation support, agent approvals, and policy-document storage.
 - PayPal code includes server-side order creation/capture/cancel, webhook signature verification, and persisted payment reconciliation. The assistant uses business-scoped records and policy retrieval.
 - A Day 4 migration adds business-scoped customer receivables/payment/activity functions and atomic per-user API rate limits. Customer detail and the dashboard now render these persisted summaries, pending approvals, and oldest-overdue invoices.
 - Payments now display both PayPal attempt state and derived reconciliation state. A captured attempt is considered reconciled only when its persisted capture reference exists and its invoice is paid with a matching amount and currency; mismatches are labeled for review.
+- Business owners can update their business name and the default currency for new invoices using the existing RLS-protected business row. Existing invoices keep their saved currency.
+- Authentication forms have pending feedback and password visibility controls. All primary route content has a keyboard skip target. Assistant timestamps use an explicit UTC display.
+- `/privacy`, `/terms`, and `/cookies` contain visibly marked implementation drafts based on the current code. Their operator, jurisdiction, retention, and contact details are explicitly left for owner and legal review. No cookie-consent banner was added because no analytics or advertising tags were found; PayPal's hosted checkout behavior still needs deployment and jurisdiction review. No refund policy was added because LedgerLoop does not control merchant refunds.
 - The interface has been rethemed with forest, warm ivory, muted emerald/teal, amber, and coral tokens. See [day4-design-system.md](day4-design-system.md).
 
 ## Local verification evidence
 
-This revision passed `npm run lint`, `npm run typecheck`, `npm test` (39/39), and `npm run build`. The first build attempt was blocked with a sandbox `EPERM` while creating generated output; the same build passed when granted workspace write access. These checks establish local compilation and unit-level behavior only; they do not prove hosted database, Auth, AI-provider, or payment flows.
+This revision passed `npm run lint`, `npm run typecheck`, `npm test` (40/40), and `npm run build`. The first build attempt was blocked with a sandbox `EPERM` while creating generated output; the same build passed when granted workspace write access. These checks establish local compilation and unit-level behavior only; they do not prove hosted database, Auth, AI-provider, or payment flows.
 
-A new loopback request from the current restricted environment was blocked by its socket permissions, so it did not establish whether the local server is currently reachable. Do not interpret that environment restriction as an application error.
+The restricted shell denied loopback access when starting a server (`EACCES`). With local network access, the running application on port 3008 returned HTTP 200 for `/login`, `/forgot-password`, `/reset-password`, `/privacy`, `/terms`, and `/cookies`, and HTTP 404 for an unknown path. The `localhost:3008` server is reachable for review.
 
 ## Security checks
 
@@ -41,11 +44,11 @@ A new loopback request from the current restricted environment was blocked by it
 
 ## Hosted service checks
 
-A read-only PostgREST probe was made against the configured Supabase project. The Auth health endpoint returned HTTP 200. Each of the following expected public tables returned HTTP 404 with `PGRST205` (table not found in the API schema cache):
+A previous read-only PostgREST probe was made against the configured Supabase project. The Auth health endpoint returned HTTP 200. At that time, each of the following expected public tables returned HTTP 404 with `PGRST205` (table not found in the API schema cache):
 
 `businesses`, `customers`, `invoices`, `payment_attempts`, `invoice_payment_links`, `paypal_webhook_events`, `knowledge_documents`, `knowledge_chunks`, `agent_conversations`, `agent_messages`, `agent_activity`, and `approval_requests`.
 
-The checked-out repository contains four ordered SQL migrations under `supabase/migrations/`, but this environment has no database URL/password or Supabase access token configured to apply them. Until they are run in Supabase SQL Editor and the schema is visible through PostgREST, database-backed customer, invoice, dashboard, agent, and payment workflows remain blocked in the hosted project.
+The checked-out repository contains four ordered SQL migrations under `supabase/migrations/`. A fresh schema check in this turn could not reach Supabase from the restricted network environment, so the current hosted schema state remains unverified. Confirm table and RPC visibility after applying the migrations in Supabase SQL Editor before relying on hosted customer, invoice, dashboard, agent, and payment workflows.
 
 ## Remaining release gaps
 
@@ -57,7 +60,8 @@ The checked-out repository contains four ordered SQL migrations under `supabase/
 - **Rate-limit verification:** Atomic per-user limits are implemented in the Day 4 migration (8 agent requests and 3 uploads per 60-second window) and enforced by both API routes. Hosted behavior is unverified until the migration is applied.
 - **Request bounds:** The agent route now reads at most 8 KiB before JSON parsing. The document route reads at most the 10 MiB file allowance plus 128 KiB multipart overhead before parsing form data, and still enforces the file-level limit.
 - **Operations UI:** Customer detail summarizes balances by currency and shows recent payment attempts and saved collection activity. The payment list derives reconciliation state from persisted attempt and invoice records. The invoice list has status filtering, pagination, and user-selectable date/number sorting. These views still need a hosted-data smoke test.
-- **Product pages:** There is a setup guide but no business settings, privacy, or terms routes. No legal or business identity should be invented to fill these pages.
+- **Product pages and legal copy:** Business name and default invoice currency can be managed in Settings. Privacy, terms, and cookie routes exist as implementation drafts, not publication-ready legal documents. Confirm the deployed cookie behavior, named operator, monitored contact, applicable jurisdiction, retention/deletion process, provider terms, and any consent obligations with the owner and qualified counsel. No legal entity, address, support contact, or governing law was invented. No refund route is included because refund handling belongs to the invoicing business and payment provider.
+- **403 handling:** There is no dedicated 403 page or current route that invokes Next.js's experimental `forbidden()` auth interrupt. Authentication redirects to sign-in and inaccessible record lookups are hidden as not-found responses. Add a 403 flow only alongside a concrete authorization path and review of the framework's experimental feature status.
 - **License:** The repository has no `LICENSE` file. The README badge and license section now say the license is not set; the owner should choose the terms before distribution. No copyright holder or legal text was invented.
 - **Integration coverage:** The current tests are unit tests. There is no browser suite covering Auth, tenant isolation against hosted Supabase, or the PayPal capture/webhook lifecycle.
 

@@ -12,5 +12,5 @@ export default async function EditCustomerPage({ params, searchParams }: { param
   if (error) throw new Error(`Customer could not be loaded: ${error.message}`);
   if (!customer) notFound();
   const action = updateCustomer.bind(null, customer.id);
-  return <main className="main-content"><PageHeading eyebrow="Customers" title="Edit customer" subtitle={`Update the record for ${customer.name}.`} action={<Link className="button secondary" href={`/customers/${customer.id}`}>Cancel</Link>} /><CustomerForm customer={customer} action={action} error={feedback} /></main>;
+  return <main id="main-content" tabIndex={-1} className="main-content"><PageHeading eyebrow="Customers" title="Edit customer" subtitle={`Update the record for ${customer.name}.`} action={<Link className="button secondary" href={`/customers/${customer.id}`}>Cancel</Link>} /><CustomerForm customer={customer} action={action} error={feedback} /></main>;
 }

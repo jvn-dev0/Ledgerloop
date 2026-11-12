@@ -1,10 +1,9 @@
 import Link from "next/link";
 import type { Invoice } from "@/types/database";
 import { CustomerPicker, type CustomerOption } from "@/components/invoices/customer-picker";
+import { SUPPORTED_CURRENCIES } from "@/lib/finance/money";
 
 type InvoiceAction = (formData: FormData) => Promise<void>;
-const CURRENCIES = ["USD", "EUR", "GBP", "INR", "CAD", "AUD", "JPY", "KWD"];
-
 function localDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -14,7 +13,7 @@ export function InvoiceForm({ invoice, initialCustomer, hasCustomers, action, de
   const due = new Date(`${today}T00:00:00`);
   due.setDate(due.getDate() + 14);
   const defaultDue = localDate(due);
-  const currencies = [...new Set([defaultCurrency, ...(invoice ? [invoice.currency] : []), ...CURRENCIES])];
+  const currencies = [...new Set([defaultCurrency, ...(invoice ? [invoice.currency] : []), ...SUPPORTED_CURRENCIES])];
 
   return (
     <>

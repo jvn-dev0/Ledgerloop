@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="error-screen">
+    <main id="main-content" tabIndex={-1} className="error-screen">
       <div className="error-mark" aria-hidden="true">404</div>
       <p className="eyebrow">Page not found</p>
       <h1>We couldn’t find that record.</h1>

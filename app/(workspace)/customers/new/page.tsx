@@ -5,5 +5,5 @@ import { PageHeading } from "@/components/ui/page-heading";
 
 export default async function NewCustomerPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
-  return <main className="main-content"><PageHeading eyebrow="Customers" title="Add customer" subtitle="Add the contact details you need for invoice records." action={<Link className="button secondary" href="/customers">Back to customers</Link>} /><CustomerForm action={createCustomer} error={error} /></main>;
+  return <main id="main-content" tabIndex={-1} className="main-content"><PageHeading eyebrow="Customers" title="Add customer" subtitle="Add the contact details you need for invoice records." action={<Link className="button secondary" href="/customers">Back to customers</Link>} /><CustomerForm action={createCustomer} error={error} /></main>;
 }

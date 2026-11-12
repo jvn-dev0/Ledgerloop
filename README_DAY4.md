@@ -8,6 +8,10 @@ Day 4 improves the existing LedgerLoop application across authentication, paymen
 
 - Password reset requests use Supabase Auth and a PKCE callback. The callback accepts only the in-app dashboard or reset-password destination, and reset requests use the same confirmation message whether or not the email exists.
 - Password updates require an authenticated recovery session, validate matching passwords, and sign out after a successful change. Supabase and PayPal error responses are not exposed in page URLs.
+- Sign-in, sign-up, and password recovery show pending feedback; password inputs include keyboard-accessible visibility controls.
+- A skip link targets the main content on app routes, and the focused target is programmatically focusable. Assistant activity timestamps use an explicit UTC format.
+- Workspace Settings can update the business name and default currency for new invoices. The update is owner-scoped and existing invoice currencies remain unchanged.
+- `/privacy`, `/terms`, and `/cookies` now provide source-based implementation drafts, visibly labeled for owner and legal review. They avoid invented company identity and contact details; there is no cookie banner without a configured non-essential tracking tool, and no refund policy for merchant payments controlled through PayPal.
 - Invoice history can be filtered by status, including an overdue view computed from pending invoices and their due dates, and sorted by issue date, due date, or invoice number. Payment history has status filters. Pagination keeps the selected filters.
 - Customer, invoice, and payment records switch to labeled mobile cards instead of a wide table. The workspace navigation has a mobile menu and keyboard-visible focus states.
 - Dashboard metric icons use inline SVGs. Touch controls, text sizing, status labels, and reduced-motion behavior were improved.
@@ -29,9 +33,9 @@ The following checks passed on 12 November 2026:
 ```text
 npm run typecheck  — passed
 npm run lint       — passed
-npm test           — passed, 39 tests
+npm test           — passed, 40 tests
 npm run build      — passed with Next.js 16.4.5
-GET /login, /forgot-password, and /reset-password on localhost:3008 — returned HTTP 200; unknown path returned HTTP 404
+GET /login, /forgot-password, /reset-password, /privacy, /terms, and /cookies on localhost:3008 — returned HTTP 200; unknown path returned HTTP 404
 ```
 
 The hosted Supabase migration state and end-to-end password email, PayPal Sandbox, and Groq flows remain environment-dependent. Apply the Day 1, Day 2, Day 3, and Day 4 migrations in order as described in the main README. Add the configured application's `/auth/callback` URL to Supabase Auth's redirect allow-list for confirmation and password-reset emails.
