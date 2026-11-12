@@ -11,7 +11,7 @@ This audit records what is present in the checked-out source and what still need
 - The project uses the Next.js App Router. Current package ranges resolve to Next.js `16.4.5`, React `19.3.1`, TypeScript `6.0.3`, Tailwind CSS `4.3.5`, and Supabase JS `2.119.0`.
 - `app/` contains authentication, setup, dashboard, customer, invoice, payment, assistant, and public payment-link routes. API routes cover the collections agent, policy documents, customer search, and PayPal operations.
 - `components/` contains workspace navigation, invoice and customer forms, dashboard summaries, payment controls, status, pagination, and feedback UI. `lib/` contains business-scoped Supabase access, finance helpers, PayPal, the agent, and RAG/document ingestion.
-- `supabase/migrations/` has the Day 1, Day 2, and Day 3 database migrations. `tests/` has unit tests for finance, agent, and RAG behavior.
+- `supabase/migrations/` has the Day 1, Day 2, and Day 3 database migrations. `tests/` has unit tests for finance, agent, RAG, and bounded request-body handling.
 - `ui-ux-pro-max-cli@2.15.0` is installed globally. Its Codex skill files are present under `.agents/skills/`.
 - `.env.local` is ignored by Git. This report contains no credential values.
 
@@ -27,7 +27,7 @@ This audit records what is present in the checked-out source and what still need
 
 ## Local verification evidence
 
-This revision passed `npm run lint`, `npm run typecheck`, `npm test` (26/26), and `npm run build`. The first build attempt was blocked with a sandbox `EPERM` while creating generated output; the same build passed when granted workspace write access. These checks establish local compilation and unit-level behavior only; they do not prove hosted database, Auth, AI-provider, or payment flows.
+This revision passed `npm run lint`, `npm run typecheck`, `npm test` (29/29), and `npm run build`. The first build attempt was blocked with a sandbox `EPERM` while creating generated output; the same build passed when granted workspace write access. These checks establish local compilation and unit-level behavior only; they do not prove hosted database, Auth, AI-provider, or payment flows.
 
 A new loopback request from the current restricted environment was blocked by its socket permissions, so it did not establish whether the local server is currently reachable. Do not interpret that environment restriction as an application error.
 
@@ -46,7 +46,8 @@ The checked-out repository contains three ordered SQL migrations under `supabase
 - **Signup diagnostics:** The local server log records Supabase Auth codes `over_email_send_rate_limit` and `email_address_invalid`. Signup now gives safe, actionable messages for these two cases while keeping other errors generic. The rate-limited flow should be retried only after checking the inbox/spam folder and allowing the provider limit to reset.
 - **Payments:** The PayPal routes are implemented, but the current environment does not have a PayPal client secret, and no sandbox capture/webhook lifecycle has been exercised.
 - **AI provider:** The agent and RAG code exist, but no live provider request or hosted vector query was verified. A Groq credential was previously pasted into chat; rotate it in the provider console before using it again.
-- **Rate and body limits:** No application-level request throttling is present for expensive agent/document endpoints. The knowledge upload route parses multipart form data before enforcing the file byte limit, so the limit does not bound request-body parsing memory. The agent JSON route also needs a request-body cap before parsing.
+- **Rate limits:** No application-level request throttling is present for expensive agent/document endpoints. This remains a production hardening gap.
+- **Request bounds:** The agent route now reads at most 8 KiB before JSON parsing. The document route reads at most the 10 MiB file allowance plus 128 KiB multipart overhead before parsing form data, and still enforces the file-level limit.
 - **Customer overview:** Customer detail does not yet summarize outstanding balance, invoice aging, payment history, and collection activity in one view.
 - **Operations UI:** Payment attempts are persisted, but there is no dedicated reconciliation view. The invoice list has status filtering but no user-selectable sort control.
 - **Product pages:** There is a setup guide but no business settings, privacy, or terms routes. No legal or business identity should be invented to fill these pages.
@@ -68,7 +69,7 @@ No UI library was added during this audit. The application already uses Tailwind
 
 1. Apply the three migrations in Supabase SQL Editor and confirm PostgREST can see the schema.
 2. Keep testing against real, owner-scoped data; verify the Auth lifecycle and customer/invoice CRUD before using dashboard results as a demo.
-3. Add request-body limits before parsing and bounded request throttling for agent/document endpoints.
+3. Add bounded request throttling for agent/document endpoints using a shared production-safe store.
 4. Add customer balance/history summaries and an invoice sort control, plus a reconciliation view backed only by persisted attempts.
 5. Complete real PayPal Sandbox and AI-provider checks after the database is available and credentials have been rotated/configured.
 6. Add integration/browser coverage for tenant isolation and the payment lifecycle, then update this audit with captured outcomes.

@@ -4,6 +4,7 @@ import { createGroqModelProvider, ProviderError } from "@/lib/agent/model-client
 import { runAgent } from "@/lib/agent/orchestrator";
 import { getToolDefinitions } from "@/lib/agent/tools";
 import type { ToolContext, ToolExecutionEvent } from "@/lib/agent/types";
+import { readRequestBodyWithinLimit } from "@/lib/http/request-body";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -35,9 +36,17 @@ function evidenceFrom(results: Array<{ name: string; data: unknown }>) {
 }
 
 export async function POST(request: Request) {
+  const boundedBody = await readRequestBodyWithinLimit(request, 8 * 1024);
+  if (!boundedBody.ok) {
+    return errorResponse(
+      boundedBody.reason === "too_large" ? "Request body is too large." : "The request could not be read.",
+      boundedBody.reason === "too_large" ? 413 : 400,
+    );
+  }
+
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(new TextDecoder().decode(boundedBody.bytes));
   } catch {
     return errorResponse("Send a valid JSON request.", 400);
   }

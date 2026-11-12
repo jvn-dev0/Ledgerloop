@@ -45,7 +45,7 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, application-level error pages, responsive customer/invoice/payment views, invoice and payment status filters, and safer payment-state error handling.
+Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, application-level error pages, responsive customer/invoice/payment views, invoice and payment status filters, bounded request parsing for agent and document APIs, safer payment-state error handling, and a forest-and-ivory workspace palette.
 
 Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials. The agent uses persisted business data and indexed policy documents; it does not generate demo financial records or simulate payment activity.
 
@@ -79,7 +79,7 @@ lib/
   supabase/            Server, admin, and request-scoped Supabase clients
   validations/         Server-side form validation
 supabase/migrations/   PostgreSQL schema, RLS, indexes, and reconciliation functions
-tests/                 Finance, agent, model-adapter, scoring, and RAG unit tests
+tests/                 Finance, agent, RAG, and bounded request-body unit tests
 types/                 Database and domain types
 README.md              Product overview and local setup
 README_DAY1.md         Day 1 implementation and verification notes

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { requireWorkspace } from "@/lib/data/workspace";
 import { DocumentInputError, loadDocument, MAX_DOCUMENT_BYTES } from "@/lib/rag/document-loader";
 import { saveKnowledgeDocument } from "@/lib/rag/ingestion";
+import { readRequestBodyWithinLimit } from "@/lib/http/request-body";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -22,9 +23,29 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const { supabase, business } = await requireWorkspace();
+  const boundedBody = await readRequestBodyWithinLimit(request, MAX_DOCUMENT_BYTES + 128 * 1024);
+  if (!boundedBody.ok) {
+    return Response.json(
+      { error: boundedBody.reason === "too_large" ? "Upload request exceeds the allowed size." : "The upload request could not be read." },
+      { status: boundedBody.reason === "too_large" ? 413 : 400 },
+    );
+  }
+
+  const contentType = request.headers.get("content-type");
+  if (!contentType?.toLowerCase().startsWith("multipart/form-data;")) {
+    return Response.json({ error: "Send the document as multipart form data." }, { status: 400 });
+  }
+
   let form: FormData;
   try {
-    form = await request.formData();
+    const parserBuffer = new ArrayBuffer(boundedBody.bytes.byteLength);
+    new Uint8Array(parserBuffer).set(boundedBody.bytes);
+    const parserRequest = new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": contentType },
+      body: parserBuffer,
+    });
+    form = await parserRequest.formData();
   } catch {
     return Response.json({ error: "Send the document as multipart form data." }, { status: 400 });
   }

@@ -13,6 +13,9 @@ Day 4 improves the existing LedgerLoop application across authentication, paymen
 - Dashboard metric icons use inline SVGs. Touch controls, text sizing, status labels, and reduced-motion behavior were improved.
 - App-level, global, and not-found boundaries provide a clear recovery path when a route fails or cannot be found.
 - Payment capture and denied-webhook transitions now check whether their database state updates succeeded before reporting the resulting state.
+- Agent JSON requests are capped at 8 KiB before parsing. Policy uploads are capped before multipart parsing, with a separate 10 MiB file limit.
+- Signup shows a safe, actionable message when Supabase temporarily rate-limits confirmation email delivery; other signup failures remain generic.
+- Workspace colors use forest, warm ivory, muted emerald/teal, amber, and coral tokens.
 - Common response security headers are configured in Next.js. The local build output is isolated in the ignored `.next-build-check/` folder.
 - UI/UX Pro Max guidance is initialized in `.agents/skills/` for future interface work.
 
@@ -23,7 +26,7 @@ The following checks passed on 12 November 2026:
 ```text
 npm run typecheck  — passed
 npm run lint       — passed
-npm test           — passed, 26 tests
+npm test           — passed, 29 tests
 npm run build      — passed with Next.js 16.4.5
 GET /login, /forgot-password, and /reset-password on localhost:3008 — returned HTTP 200; unknown path returned HTTP 404
 ```

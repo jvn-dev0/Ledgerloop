@@ -15,6 +15,7 @@
     "tests/finance.test.mts",
     "tests/agent.test.mts",
     "tests/rag.test.mts",
+    "tests/http.test.mts",
     "types/server-only.d.ts",
     "lib/finance/money.ts",
     "lib/finance/date.ts",
@@ -30,7 +31,8 @@
     "lib/rag/document-loader.ts",
     "lib/rag/embeddings.ts",
     "lib/rag/ingestion.ts",
-    "lib/rag/retriever.ts"
+    "lib/rag/retriever.ts",
+    "lib/http/request-body.ts"
   ],
   "exclude": ["node_modules", ".test-build"]
 }
