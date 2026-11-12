@@ -18,6 +18,7 @@
     "tests/http.test.mts",
     "tests/queries.test.mts",
     "tests/rate-limit.test.mts",
+    "tests/payments.test.mts",
     "types/server-only.d.ts",
     "lib/finance/money.ts",
     "lib/finance/date.ts",
@@ -36,7 +37,8 @@
     "lib/rag/retriever.ts",
     "lib/http/request-body.ts",
     "lib/data/invoice-sorting.ts",
-    "lib/security/rate-limit.ts"
+    "lib/security/rate-limit.ts",
+    "lib/payments/reconciliation.ts"
   ],
   "exclude": ["node_modules", ".test-build"]
 }

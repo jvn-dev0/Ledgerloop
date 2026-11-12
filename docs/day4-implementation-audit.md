@@ -24,13 +24,20 @@ This audit records what is present in the checked-out source and what still need
 - Day 1–3 migrations define business-scoped records and RLS, invoice/payment constraints, PayPal reconciliation support, agent approvals, and policy-document storage.
 - PayPal code includes server-side order creation/capture/cancel, webhook signature verification, and persisted payment reconciliation. The assistant uses business-scoped records and policy retrieval.
 - A Day 4 migration adds business-scoped customer receivables/payment/activity functions and atomic per-user API rate limits. Customer detail and the dashboard now render these persisted summaries, pending approvals, and oldest-overdue invoices.
+- Payments now display both PayPal attempt state and derived reconciliation state. A captured attempt is considered reconciled only when its persisted capture reference exists and its invoice is paid with a matching amount and currency; mismatches are labeled for review.
 - The interface has been rethemed with forest, warm ivory, muted emerald/teal, amber, and coral tokens. See [day4-design-system.md](day4-design-system.md).
 
 ## Local verification evidence
 
-This revision passed `npm run lint`, `npm run typecheck`, `npm test` (35/35), and `npm run build`. The first build attempt was blocked with a sandbox `EPERM` while creating generated output; the same build passed when granted workspace write access. These checks establish local compilation and unit-level behavior only; they do not prove hosted database, Auth, AI-provider, or payment flows.
+This revision passed `npm run lint`, `npm run typecheck`, `npm test` (39/39), and `npm run build`. The first build attempt was blocked with a sandbox `EPERM` while creating generated output; the same build passed when granted workspace write access. These checks establish local compilation and unit-level behavior only; they do not prove hosted database, Auth, AI-provider, or payment flows.
 
 A new loopback request from the current restricted environment was blocked by its socket permissions, so it did not establish whether the local server is currently reachable. Do not interpret that environment restriction as an application error.
+
+## Security checks
+
+- `.env.local` is ignored and is not tracked. A targeted scan for Groq and Supabase secret prefixes found no matches in repository working files or Git history; this is a pattern check, not a general proof that every possible credential format is absent.
+- `npm audit --omit=dev` reported no production dependency vulnerabilities. The full audit reports seven moderate findings from the development-only `minimatch@10.2.6` used by `@typescript-eslint/typescript-estree` through `eslint-config-next`. The [upstream advisory](https://github.com/isaacs/minimatch/security/advisories/GHSA-g3hv-75wg-m249) lists `10.2.6` as affected and `11.0.1` as patched. The current upstream dependency requires the `10.x` range, so a forced major override was not applied; recheck when upstream tooling releases a compatible update.
+- A Groq API key was previously pasted into chat. Rotate it in the provider console before use; no credential value is stored in this report.
 
 ## Hosted service checks
 
@@ -46,10 +53,10 @@ The checked-out repository contains four ordered SQL migrations under `supabase/
 - **Auth lifecycle:** The Auth endpoint responds, but registration, confirmation, sign-in, sign-out, reset, and business creation have not been verified with a real test account.
 - **Signup diagnostics:** The local server log records Supabase Auth codes `over_email_send_rate_limit` and `email_address_invalid`. Signup now gives safe, actionable messages for these two cases while keeping other errors generic. The rate-limited flow should be retried only after checking the inbox/spam folder and allowing the provider limit to reset.
 - **Payments:** The PayPal routes are implemented, but the current environment does not have a PayPal client secret, and no sandbox capture/webhook lifecycle has been exercised.
-- **AI provider:** The agent and RAG code exist, but no live provider request or hosted vector query was verified. A Groq credential was previously pasted into chat; rotate it in the provider console before using it again.
+- **AI provider:** The agent and RAG code exist, but no live provider request or hosted vector query was verified. Rotate the Groq key previously pasted into chat before using it again.
 - **Rate-limit verification:** Atomic per-user limits are implemented in the Day 4 migration (8 agent requests and 3 uploads per 60-second window) and enforced by both API routes. Hosted behavior is unverified until the migration is applied.
 - **Request bounds:** The agent route now reads at most 8 KiB before JSON parsing. The document route reads at most the 10 MiB file allowance plus 128 KiB multipart overhead before parsing form data, and still enforces the file-level limit.
-- **Operations UI:** Customer detail now summarizes balances by currency and shows recent payment attempts and saved collection activity. Payment attempts are persisted, but there is no dedicated reconciliation view. The invoice list has status filtering, pagination, and user-selectable date/number sorting.
+- **Operations UI:** Customer detail summarizes balances by currency and shows recent payment attempts and saved collection activity. The payment list derives reconciliation state from persisted attempt and invoice records. The invoice list has status filtering, pagination, and user-selectable date/number sorting. These views still need a hosted-data smoke test.
 - **Product pages:** There is a setup guide but no business settings, privacy, or terms routes. No legal or business identity should be invented to fill these pages.
 - **License:** The repository has no `LICENSE` file. The README badge and license section now say the license is not set; the owner should choose the terms before distribution. No copyright holder or legal text was invented.
 - **Integration coverage:** The current tests are unit tests. There is no browser suite covering Auth, tenant isolation against hosted Supabase, or the PayPal capture/webhook lifecycle.
@@ -69,7 +76,7 @@ No UI library was added during this audit. The application already uses Tailwind
 
 1. Apply the four migrations in Supabase SQL Editor and confirm PostgREST can see the schema and Day 4 reporting/rate-limit functions.
 2. Keep testing against real, owner-scoped data; verify the Auth lifecycle and customer/invoice CRUD before using dashboard results as a demo.
-3. Exercise the Day 4 per-user rate limits against the hosted database and add a dedicated payment reconciliation view backed only by persisted attempts.
+3. Exercise the Day 4 per-user rate limits against the hosted database and test payment reconciliation labels against real captures.
 4. Test customer balances/history, invoice sorting, and dashboard queues against real business data.
 5. Complete real PayPal Sandbox and AI-provider checks after the database is available and credentials have been rotated/configured.
 6. Add integration/browser coverage for tenant isolation and the payment lifecycle, then update this audit with captured outcomes.

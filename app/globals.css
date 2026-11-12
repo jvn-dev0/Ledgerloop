@@ -158,10 +158,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .badge.paid, .badge.captured { background: var(--success-soft); color: var(--success); }
 .badge.approved { background: var(--info-soft); color: var(--info); }
 .badge.completed { background: var(--success-soft); color: var(--success); }
+.badge.reconciled { background: var(--success-soft); color: var(--success); }
 .badge.started { background: var(--warning-soft); color: var(--warning); }
 .badge.pending-approval { background: var(--warning-soft); color: var(--warning); }
+.badge.awaiting-customer-approval, .badge.not-yet-reconciled { background: var(--warning-soft); color: var(--warning); }
 .badge.pending, .badge.overdue { background: var(--warning-soft); color: var(--warning); }
-.badge.overdue, .badge.failed { background: var(--danger-soft); color: var(--danger); }
+.badge.overdue, .badge.failed, .badge.review-required { background: var(--danger-soft); color: var(--danger); }
 .badge.cancelled { background: var(--surface-muted); color: var(--muted); }
 .badge.draft { background: var(--info-soft); color: var(--info); }
 .badge.created { background: var(--surface-muted); color: var(--ink-secondary); }

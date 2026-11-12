@@ -16,6 +16,7 @@ Day 4 improves the existing LedgerLoop application across authentication, paymen
 - Agent JSON requests are capped at 8 KiB before parsing. Policy uploads are capped before multipart parsing, with a separate 10 MiB file limit.
 - Database-backed rate limits cap agent requests at 8 per user per minute and policy uploads at 3 per user per minute. Rate-limit storage is private to a security-definer RPC; the table is not directly accessible to authenticated clients.
 - Customer detail shows outstanding and overdue totals by currency, recent payment attempts, and saved collections activity. The dashboard shows real pending approvals and the five longest-overdue invoices.
+- Payments show both the PayPal attempt state and its reconciliation state. A capture is marked reconciled only when its persisted capture reference exists and the matching invoice is paid with the same amount and currency; mismatches need review.
 - Signup shows a safe, actionable message when Supabase temporarily rate-limits confirmation email delivery; other signup failures remain generic.
 - Workspace colors use forest, warm ivory, muted emerald/teal, amber, and coral tokens.
 - Common response security headers are configured in Next.js. The local build output is isolated in the ignored `.next-build-check/` folder.
@@ -28,7 +29,7 @@ The following checks passed on 12 November 2026:
 ```text
 npm run typecheck  — passed
 npm run lint       — passed
-npm test           — passed, 35 tests
+npm test           — passed, 39 tests
 npm run build      — passed with Next.js 16.4.5
 GET /login, /forgot-password, and /reset-password on localhost:3008 — returned HTTP 200; unknown path returned HTTP 404
 ```

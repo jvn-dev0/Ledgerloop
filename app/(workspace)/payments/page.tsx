@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { LIST_PAGE_SIZE, parseListPage, parsePaymentStatusFilter, PAYMENT_STATUS_FILTERS } from "@/lib/data/queries";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { formatDate } from "@/lib/finance/date";
+import { getReconciliationStatus, PAYMENT_STATUS_LABELS, RECONCILIATION_STATUS_LABELS } from "@/lib/payments/reconciliation";
 
 export default async function PaymentsPage({ searchParams }: { searchParams: Promise<{ page?: string; status?: string }> }) {
   const params = await searchParams;
@@ -25,12 +26,12 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
     if (totalPages > 1) query.set("page", String(totalPages));
     redirect(`/payments${query.size ? `?${query.toString()}` : ""}`);
   }
-  let invoiceById = new Map<string, { invoice_number: string; customer_id: string }>();
+  let invoiceById = new Map<string, { invoice_number: string; customer_id: string; amount: string; currency: string; status: string }>();
   let customerById = new Map<string, { name: string }>();
   let relatedError = false;
   if (attemptsResult.data?.length) {
     const invoiceIds = [...new Set(attemptsResult.data.map((attempt) => attempt.invoice_id))];
-    const invoices = await supabase.from("invoices").select("id, invoice_number, customer_id").eq("business_id", business.id).in("id", invoiceIds);
+    const invoices = await supabase.from("invoices").select("id, invoice_number, customer_id, amount, currency, status").eq("business_id", business.id).in("id", invoiceIds);
     relatedError ||= Boolean(invoices.error);
     invoiceById = new Map((invoices.data ?? []).map((invoice) => [invoice.id, invoice]));
     const customerIds = [...new Set((invoices.data ?? []).map((invoice) => invoice.customer_id))];
@@ -43,7 +44,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
 
   return (
     <main className="main-content">
-      <PageHeading eyebrow="Transactions" title="Payments" subtitle="Track payment attempts and their verified references against invoices." />
+      <PageHeading eyebrow="Transactions" title="Payments" subtitle="Compare each saved PayPal attempt with its invoice. Reconciliation requires a verified capture and matching paid invoice amount and currency." />
       <div className="toolbar">
         <form className="filter-form payment-filter" action="/payments" method="get">
           <label className="sr-only" htmlFor="payment-status">Filter payments by status</label>
@@ -55,7 +56,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: Pro
         </form>
         <span className="page-subtitle">{total} {total === 1 ? "payment attempt" : "payment attempts"}</span>
       </div>
-      {attemptsResult.error || relatedError ? <div className="alert" role="alert">Payment records could not be loaded. Refresh and try again.</div> : attemptsResult.data?.length ? <section className="card"><div className="table-wrap"><table className="data-table"><thead><tr><th>Invoice</th><th>Customer</th><th>Provider</th><th>PayPal order</th><th>Capture</th><th>Status</th><th className="amount-cell">Amount</th><th>Created</th></tr></thead><tbody>{attemptsResult.data.map((attempt) => { const invoice = invoiceById.get(attempt.invoice_id); return <tr key={attempt.id}><td data-label="Invoice" className="primary-cell">{invoice ? <Link href={`/invoices/${attempt.invoice_id}`}>{invoice.invoice_number}</Link> : "Invoice unavailable"}</td><td data-label="Customer">{invoice ? customerById.get(invoice.customer_id)?.name ?? "Customer unavailable" : "—"}</td><td data-label="Provider">{attempt.provider.toUpperCase()}</td><td data-label="PayPal order" className="reference-cell">{attempt.provider_order_id ?? "Not created"}</td><td data-label="Capture" className="reference-cell">{attempt.provider_capture_id ?? "—"}</td><td data-label="Status"><StatusBadge status={attempt.status.replaceAll("_", " ")} /></td><td data-label="Amount" className="amount-cell">{formatMoney(attempt.amount, attempt.currency)}</td><td data-label="Created">{formatDate(attempt.created_at)}</td></tr>; })}</tbody></table></div></section> : <section className="card"><EmptyState title={status ? "No matching payments" : "No payment records yet"}>{status ? "Choose another payment status to review different attempts." : "Payment attempts appear here when a customer starts checkout. No transactions are fabricated."}</EmptyState></section>}
+      {attemptsResult.error || relatedError ? <div className="alert" role="alert">Payment records could not be loaded. Refresh and try again.</div> : attemptsResult.data?.length ? <section className="card"><div className="table-wrap"><table className="data-table"><thead><tr><th>Invoice</th><th>Customer</th><th>Provider</th><th>PayPal order</th><th>Capture</th><th>Payment state</th><th>Reconciliation</th><th className="amount-cell">Amount</th><th>Created</th></tr></thead><tbody>{attemptsResult.data.map((attempt) => { const invoice = invoiceById.get(attempt.invoice_id); const reconciliation = getReconciliationStatus(attempt, invoice); return <tr key={attempt.id}><td data-label="Invoice" className="primary-cell">{invoice ? <Link href={`/invoices/${attempt.invoice_id}`}>{invoice.invoice_number}</Link> : "Invoice unavailable"}</td><td data-label="Customer">{invoice ? customerById.get(invoice.customer_id)?.name ?? "Customer unavailable" : "—"}</td><td data-label="Provider">{attempt.provider.toUpperCase()}</td><td data-label="PayPal order" className="reference-cell">{attempt.provider_order_id ?? "Not created"}</td><td data-label="Capture" className="reference-cell">{attempt.provider_capture_id ?? "—"}</td><td data-label="Payment state"><StatusBadge status={PAYMENT_STATUS_LABELS[attempt.status]} /></td><td data-label="Reconciliation"><StatusBadge status={RECONCILIATION_STATUS_LABELS[reconciliation]} /></td><td data-label="Amount" className="amount-cell">{formatMoney(attempt.amount, attempt.currency)}</td><td data-label="Created">{formatDate(attempt.created_at)}</td></tr>; })}</tbody></table></div></section> : <section className="card"><EmptyState title={status ? "No matching payments" : "No payment records yet"}>{status ? "Choose another payment status to review different attempts." : "Payment attempts appear here when a customer starts checkout. No transactions are fabricated."}</EmptyState></section>}
       {!attemptsResult.error && !relatedError && <PaginationControls basePath="/payments" currentPage={page} pageSize={LIST_PAGE_SIZE} totalItems={total} filters={{ status }} />}
     </main>
   );
