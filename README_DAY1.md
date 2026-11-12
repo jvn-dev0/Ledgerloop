@@ -22,9 +22,10 @@ This file tracks the Day 1 application work separately from the project overview
 1. Install dependencies with `npm install`.
 2. Copy `.env.example` to `.env.local` and add the Supabase project URL and publishable key.
 3. Apply `supabase/migrations/20261109000100_initial_schema.sql` using the Supabase SQL Editor.
-4. Start the app with `npm run dev` and create an account at `/signup`.
+4. Apply `supabase/migrations/20261109000200_backfill_existing_businesses.sql` so accounts created before the schema receive a workspace.
+5. Start the app with `npm run dev` and create an account at `/signup`.
 
-The signup trigger creates one business record for each new auth user. If email confirmation is enabled in Supabase, confirm the account before signing in.
+The signup trigger creates one business record for each new auth user. The backfill migration handles existing accounts and is safe to apply more than once. If email confirmation is enabled in Supabase, confirm the account before signing in. See [Supabase setup and existing-account recovery](README_AUTH_SETUP_FIX.md) for the full migration order and local auth URLs.
 
 ## Verification in this checkpoint
 
@@ -34,7 +35,7 @@ The signup trigger creates one business record for each new auth user. If email 
 - `npm run build` — passed.
 - `npm audit --omit=dev` — passed with zero production dependency advisories.
 - The Supabase project URL and publishable key are configured in the local, Git-ignored `.env.local`.
-- Supabase migration and authenticated create/edit/persistence checks — not yet verified. At the last read-only check, Supabase returned `PGRST205` for `public.businesses`, so apply the migration and rerun these checks.
+- Supabase migration and authenticated create/edit/persistence checks — not yet verified. At the last read-only check, Supabase returned `PGRST205` for `public.businesses`, so apply the Day 1 schema and existing-account backfill before rerunning these checks.
 - PayPal Sandbox — not implemented; scheduled for Day 2.
 - Collections Agent — outside the Day 1 milestone; implemented in the later [Day 3 update](README_DAY3.md).
 

@@ -31,6 +31,7 @@ An accounts receivable workspace for customer records, invoices, currency-aware 
 [Day 2 Update](README_DAY2.md) •
 [Day 3 Update](README_DAY3.md) •
 [Day 4 Update](README_DAY4.md) •
+[Existing Account Setup](README_AUTH_SETUP_FIX.md) •
 [Performance Notes](docs/performance-and-complexity.md) •
 [Day 4 Release Report](docs/day4-release-report.md) •
 [Three-Minute Demo Runbook](docs/day4-demo-script.md)
@@ -90,6 +91,7 @@ README_DAY1.md         Day 1 implementation and verification notes
 README_DAY2.md         Day 2 payment implementation and setup notes
 README_DAY3.md         Day 3 collections agent and RAG setup notes
 README_DAY4.md         Day 4 reliability, recovery, and responsive UI notes
+README_AUTH_SETUP_FIX.md  Supabase setup and existing-account workspace recovery
 .agents/skills/        Project-local UI/UX Pro Max guidance for Codex
 docs/                  Performance, release audit, and demo runbook
 ```
