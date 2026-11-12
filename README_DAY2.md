@@ -18,7 +18,7 @@ This checkpoint adds the PayPal payment path to Day 1 customer, invoice, and rec
 
 1. Copy `.env.example` to `.env.local`.
 2. Configure the Supabase project URL and publishable key.
-3. Add `SUPABASE_SERVICE_ROLE_KEY` locally. It is server-only and must never be prefixed with `NEXT_PUBLIC_` or committed.
+3. Add `SUPABASE_SECRET_KEY` locally (the legacy `SUPABASE_SERVICE_ROLE_KEY` remains accepted). It is server-only, bypasses RLS, and must never be prefixed with `NEXT_PUBLIC_` or committed.
 4. In the Supabase SQL Editor, apply these migrations in order:
    - `supabase/migrations/20261109000100_initial_schema.sql`
    - `supabase/migrations/20261110000100_paypal_support.sql`
@@ -35,12 +35,12 @@ PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 PAYPAL_CLIENT_ID=
 PAYPAL_CLIENT_SECRET=
 PAYPAL_WEBHOOK_ID=
-APP_URL=http://localhost:3000
+APP_URL=http://localhost:3008
 ```
 
 Register the webhook URL ending in `/api/paypal/webhook` in the PayPal Developer Dashboard. Subscribe to `PAYMENT.CAPTURE.COMPLETED` and `PAYMENT.CAPTURE.DENIED`. Use a reachable HTTPS webhook endpoint for PayPal delivery; local webhook delivery requires a secure tunnel configured in the Sandbox app. The configured webhook ID must be the ID for that exact endpoint.
 
-`PAYPAL_CLIENT_SECRET` and `SUPABASE_SERVICE_ROLE_KEY` are secrets. Do not paste them into source files, screenshots, issues, or Git. The browser receives only the PayPal client ID.
+`PAYPAL_CLIENT_SECRET` and `SUPABASE_SECRET_KEY` are secrets. Do not paste them into source files, screenshots, issues, or Git. The browser receives only the PayPal client ID.
 
 ## Checkout and reconciliation behavior
 

@@ -11,6 +11,26 @@
     "outDir": ".test-build",
     "rootDir": "."
   },
-  "include": ["tests/finance.test.mts", "lib/finance/money.ts", "lib/finance/date.ts", "lib/paypal/amount.ts"],
+  "include": [
+    "tests/finance.test.mts",
+    "tests/agent.test.mts",
+    "tests/rag.test.mts",
+    "types/server-only.d.ts",
+    "lib/finance/money.ts",
+    "lib/finance/date.ts",
+    "lib/paypal/amount.ts",
+    "lib/agent/collections.ts",
+    "lib/agent/orchestrator.ts",
+    "lib/agent/system-prompt.ts",
+    "lib/agent/model-client.ts",
+    "lib/agent/telemetry.ts",
+    "lib/agent/tools.ts",
+    "lib/validations/forms.ts",
+    "lib/rag/chunker.ts",
+    "lib/rag/document-loader.ts",
+    "lib/rag/embeddings.ts",
+    "lib/rag/ingestion.ts",
+    "lib/rag/retriever.ts"
+  ],
   "exclude": ["node_modules", ".test-build"]
 }

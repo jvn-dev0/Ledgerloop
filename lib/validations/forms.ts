@@ -1,4 +1,4 @@
-import { isCurrency, normalizeAmount } from "@/lib/finance/money";
+import { isCurrency, normalizeAmount } from "../finance/money.ts";
 
 export type ValidationResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -8,6 +8,7 @@ export type CustomerInput = {
   phone: string | null;
   company_name: string | null;
   notes: string | null;
+  collection_contact_preference: "email" | "phone" | "portal" | null;
 };
 
 export type InvoiceInput = {
@@ -36,14 +37,16 @@ export function parseCustomer(formData: FormData): ValidationResult<CustomerInpu
   const phone = field(formData, "phone");
   const companyName = field(formData, "company_name");
   const notes = field(formData, "notes");
+  const collectionPreference = field(formData, "collection_contact_preference");
 
   if (name.length < 1 || name.length > 160) return { ok: false, error: "Enter a customer name under 160 characters." };
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "Enter a valid email address." };
   if (phone.length > 40) return { ok: false, error: "Phone number must be 40 characters or fewer." };
   if (companyName.length > 160) return { ok: false, error: "Company name must be 160 characters or fewer." };
   if (notes.length > 4000) return { ok: false, error: "Notes must be 4,000 characters or fewer." };
+  if (collectionPreference && !["email", "phone", "portal"].includes(collectionPreference)) return { ok: false, error: "Choose a valid collection contact preference." };
 
-  return { ok: true, data: { name, email, phone: optional(phone), company_name: optional(companyName), notes: optional(notes) } };
+  return { ok: true, data: { name, email, phone: optional(phone), company_name: optional(companyName), notes: optional(notes), collection_contact_preference: collectionPreference ? collectionPreference as "email" | "phone" | "portal" : null } };
 }
 
 export function parseInvoice(formData: FormData): ValidationResult<InvoiceInput> {

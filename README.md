@@ -10,7 +10,7 @@
 
 **From unpaid invoice to verified payment.**
 
-An accounts receivable workspace for customer records, invoices, currency-aware receivables, and verified PayPal payment processing. The Collections Agent remains a later milestone.
+An accounts receivable workspace for customer records, invoices, currency-aware receivables, verified PayPal payment processing, and AI-assisted collections with business-scoped policy retrieval.
 
 <br/>
 
@@ -29,6 +29,7 @@ An accounts receivable workspace for customer records, invoices, currency-aware 
 [Roadmap](#-roadmap) •
 [Day 1 Update](README_DAY1.md) •
 [Day 2 Update](README_DAY2.md) •
+[Day 3 Update](README_DAY3.md) •
 [Performance Notes](docs/performance-and-complexity.md)
 
 </div>
@@ -43,9 +44,9 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. The **LedgerLoop Collections Agent** is planned for Day 3.
+Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history.
 
-Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials; the application does not simulate payment activity.
+Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials. The agent uses persisted business data and indexed policy documents; it does not generate demo financial records or simulate payment activity.
 
 **Our goal:** Reduce manual accounts receivable work and make the journey from invoice creation to payment reconciliation simpler and more transparent.
 
@@ -55,7 +56,7 @@ Payment code uses real PayPal responses and persisted database records. Sandbox 
 app/
   (workspace)/       Authenticated dashboard, customer, invoice, and payment pages
   actions/            Server actions for authentication, invoices, and payment links
-  api/                Customer search and PayPal order, capture, cancel, and webhook routes
+  api/                Customer search, PayPal routes, agent chat, approval, and policy-document APIs
   pay/[token]/         Public invoice checkout page
   login/, signup/      Supabase Auth entry points
   setup/               Supabase configuration and migration guidance
@@ -68,15 +69,18 @@ components/
 lib/
   data/                Business-scoped database queries
   finance/             Decimal-safe money and date utilities
+  agent/               Groq adapter, orchestration, typed tools, scoring, and telemetry
+  rag/                 Document extraction, local embeddings, ingestion, and retrieval
   paypal/              Server-only PayPal API and checkout helpers
   supabase/            Server, admin, and request-scoped Supabase clients
   validations/         Server-side form validation
 supabase/migrations/   PostgreSQL schema, RLS, indexes, and reconciliation functions
-tests/                 Finance unit tests
+tests/                 Finance, agent, model-adapter, scoring, and RAG unit tests
 types/                 Database and domain types
 README.md              Product overview and local setup
 README_DAY1.md         Day 1 implementation and verification notes
 README_DAY2.md         Day 2 payment implementation and setup notes
+README_DAY3.md         Day 3 collections agent and RAG setup notes
 docs/                  Performance and complexity notes
 ```
 
@@ -99,11 +103,7 @@ These tasks consume time that business owners could spend serving customers and 
 
 ## 💡 Our Solution
 
-LedgerLoop is being built in milestones. Day 1 establishes customer and invoice management, database access controls, and receivables summaries. Day 2 adds PayPal payment processing; Day 3 adds the Collections Agent.
-
-The planned Collections Agent will help business owners review outstanding receivables and decide what to do next.
-
-Planned agent capabilities:
+LedgerLoop is built in milestones. Day 1 establishes customer and invoice management, database access controls, and receivables summaries. Day 2 adds PayPal payment processing. Day 3 adds an owner-scoped collections assistant with these capabilities:
 
 1. Retrieve invoice and customer information.
 2. Identify overdue and outstanding invoices.
@@ -111,7 +111,7 @@ Planned agent capabilities:
 4. Prioritise collection activities using transparent rules and available customer history.
 5. Generate personalised payment reminder drafts.
 6. Prepare PayPal payment checkout sessions.
-7. Verify completed payments and reconcile invoice records.
+7. Read the verified PayPal payment status stored for an invoice.
 
 **Human approval remains part of important financial actions.** The agent assists with decisions and execution, while verified payment records remain the source of truth.
 
@@ -123,20 +123,18 @@ Planned agent capabilities:
 | Invoice management | Implemented with business-scoped forms, details, and paginated lists. |
 | Receivables dashboard | PostgreSQL aggregation grouped by currency; requires migrations to be applied. |
 | Business data isolation | Supabase Auth and row-level security policies are defined in the migrations. |
-| Collections Agent | Planned for Day 3; not available yet. |
+| Collections Agent | Day 3 code is implemented; it requires the Day 3 migration and a valid server-side Groq key. |
 | PayPal checkout, capture, and webhooks | Day 2 code is implemented; Sandbox setup and end-to-end verification remain environment-dependent. |
 
 ## 🤖 The Collections Agent
 
-The AI agent is planned for Day 3 and is not implemented yet.
-
-When implemented, it will interact with application data through controlled backend tools.
+The AI agent interacts with application data through typed, server-side tools. Groq's Qwen model proposes tool calls; the backend validates each request, scopes queries to the signed-in business, and returns persisted results to the model.
 
 Example user instruction:
 
 > Show me all overdue invoices and tell me which customers I should follow up with first.
 
-The planned agent workflow is:
+The implemented agent workflow is:
 
 ```text
 User Request
@@ -172,7 +170,7 @@ Execute Approved Action
 Verify & Record Result
 ```
 
-The application does not currently include this agent workflow. Its design will use structured tools rather than generated financial values.
+The workflow uses structured tools rather than generated financial values. The LLM cannot issue SQL, access another business, send email, or capture a payment.
 
 **Important design principle:** AI can interpret, analyse, and recommend. The database and verified PayPal responses determine actual balances and payment status.
 
@@ -180,7 +178,7 @@ The application does not currently include this agent workflow. Its design will 
 
 The Day 2 PayPal integration creates private invoice payment links, sends order and capture requests from the server, verifies amounts and currency against stored invoice data, and reconciles successful captures. Webhook signatures are verified with PayPal and duplicate event IDs are recorded.
 
-The planned Sandbox integration will support:
+The PayPal Sandbox integration supports:
 
 - Creating PayPal payment orders.
 - Generating checkout experiences.
@@ -195,7 +193,7 @@ The database prevents an invoice from being marked paid unless a matching captur
 
 ## 🏗️ Architecture
 
-The web app and PayPal server integration are implemented through Day 2. The Collections Agent remains planned and is not part of this release.
+The web app, PayPal integration, and Day 3 collections workflow are implemented in the repository. Live finance workflows require the migrations to be applied to the connected Supabase project; the agent also requires a valid server-side Groq key.
 
 ```text
                   LEDGERLOOP
@@ -205,7 +203,7 @@ The web app and PayPal server integration are implemented through Day 2. The Col
           v                         v
      Web Application          Collections Agent
           |                         |
-          |                    OpenAI API
+          |                    Groq Qwen 3.8
           |                         |
           |                   Tool Calling
           |                         |
@@ -258,11 +256,11 @@ The web app and PayPal server integration are implemented through Day 2. The Col
 
 ### AI & Payment Infrastructure
 
-<p>
-<img src="https://skillicons.dev/icons?i=openai" />
-</p>
+<p><strong>Groq · Transformers.js · pgvector · PayPal</strong></p>
 
-- OpenAI API — Runtime intelligence and tool calling.
+- Groq API (Qwen 3.8 27B) — Runtime language model and tool-call proposals; model availability and limits follow Groq account settings.
+- `@huggingface/transformers` with `Supabase/gte-small` — Local, server-side 384-dimensional document embeddings.
+- pgvector — Business-scoped semantic policy search in Supabase PostgreSQL.
 - PayPal Developer Platform — Payment orders, checkout, and transaction processing.
 - PayPal Sandbox — Payment integration and testing.
 - Webhooks — Payment event processing and reconciliation.
@@ -277,7 +275,7 @@ The web app and PayPal server integration are implemented through Day 2. The Col
 - VS Code — Development environment.
 - Vercel — Planned application deployment.
 
-OpenAI and deployment integrations are planned. PayPal integration code is present, but its Sandbox app credentials and webhook configuration must be supplied locally.
+The OpenAI API remains a possible later provider. PayPal Sandbox credentials and webhook configuration must be supplied locally.
 
 ## 🔐 Security & Reliability
 
@@ -317,7 +315,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Apply `supabase/migrations/20261109000100_initial_schema.sql` and then `supabase/migrations/20261110000100_paypal_support.sql` in the Supabase SQL Editor before using the app. The first migration creates the business, customer, invoice, payment-attempt, and audit-log tables and their access policies. The Day 2 migration adds payment links, webhook events, and server-side reconciliation functions.
+Apply migrations in order in the Supabase SQL Editor: Day 1 `20261109000100_initial_schema.sql`, Day 2 `20261110000100_paypal_support.sql`, then Day 3 `20261111000100_collections_agent_rag.sql`. Enable the `vector` extension before Day 3. That migration checks for the Day 1/2 schema and stops if required tables are missing.
 
 ### Environment Variables
 
@@ -328,8 +326,8 @@ Add the required credentials to `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 
-# Server-only; never prefix with NEXT_PUBLIC_ or commit its value.
-SUPABASE_SERVICE_ROLE_KEY=
+# Server-only Supabase secret key; never prefix with NEXT_PUBLIC_ or commit its value.
+SUPABASE_SECRET_KEY=
 
 # PayPal Developer Sandbox app and webhook values.
 PAYPAL_ENV=sandbox
@@ -337,7 +335,12 @@ PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
 PAYPAL_CLIENT_ID=
 PAYPAL_CLIENT_SECRET=
 PAYPAL_WEBHOOK_ID=
-APP_URL=http://localhost:3000
+APP_URL=http://localhost:3008
+
+# Server-only Groq inference
+GROQ_API_KEY=
+GROQ_MODEL=qwen/qwen3.8-27b
+TRANSFORMERS_CACHE_DIR=
 ```
 
 Never commit `.env.local` or expose secret keys in frontend code.
@@ -351,10 +354,10 @@ npm run dev
 Open:
 
 ```text
-http://localhost:3000
+http://localhost:3008
 ```
 
-With Supabase credentials missing or migrations unapplied, LedgerLoop shows setup guidance rather than demo records. PayPal links and checkout require the server-only key and Sandbox app configuration. See [README_DAY1.md](README_DAY1.md) and [README_DAY2.md](README_DAY2.md) for implementation status and verification notes.
+With Supabase credentials missing or migrations unapplied, LedgerLoop shows setup guidance rather than demo records. The collections assistant needs the Day 3 migration, a valid Groq key, and a one-time local download of the embedding model. PayPal links and checkout require the server-only Supabase key and Sandbox app configuration. See [README_DAY1.md](README_DAY1.md), [README_DAY2.md](README_DAY2.md), and [README_DAY3.md](README_DAY3.md) for milestone details.
 
 ## 🗺️ Roadmap
 
@@ -362,10 +365,10 @@ With Supabase credentials missing or migrations unapplied, LedgerLoop shows setu
 - [x] Invoice and customer management.
 - [x] Receivables dashboard.
 - [x] PayPal order, capture, and webhook integration code (Sandbox end-to-end verification pending configuration).
-- [ ] Collections Agent with backend tool calling.
-- [ ] Overdue invoice analysis and prioritisation.
-- [ ] Personalised reminder generation.
-- [ ] Approval workflow and audit history.
+- [x] Collections Agent with backend tool calling and business-scoped policy retrieval.
+- [x] Overdue invoice analysis and deterministic prioritisation.
+- [x] Personalised reminder drafts for owner review.
+- [x] Approval workflow and persisted agent activity history.
 - [ ] Testing and deployment.
 - [ ] Documentation and demonstration.
 

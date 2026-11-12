@@ -36,7 +36,7 @@ The signup trigger creates one business record for each new auth user. If email 
 - The Supabase project URL and publishable key are configured in the local, Git-ignored `.env.local`.
 - Supabase migration and authenticated create/edit/persistence checks — not yet verified. At the last read-only check, Supabase returned `PGRST205` for `public.businesses`, so apply the migration and rerun these checks.
 - PayPal Sandbox — not implemented; scheduled for Day 2.
-- Collections Agent — not implemented; scheduled for Day 3.
+- Collections Agent — outside the Day 1 milestone; implemented in the later [Day 3 update](README_DAY3.md).
 
 ## Current limitations
 
