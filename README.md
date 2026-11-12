@@ -45,7 +45,7 @@ Businesses often struggle with unpaid invoices, inconsistent payment follow-ups,
 
 LedgerLoop brings these workflows together in one platform.
 
-Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, application-level error pages, responsive customer/invoice/payment views, invoice and payment status filters, bounded request parsing for agent and document APIs, safer payment-state error handling, and a forest-and-ivory workspace palette.
+Day 1 supports authenticated customer and invoice management, with receivables summaries calculated from persisted invoice records. Day 2 adds secure PayPal checkout links, server-side order and capture handling, webhook verification, and payment reconciliation. Day 3 adds the **LedgerLoop Collections Agent**: a Groq-hosted Qwen tool-calling loop, deterministic collections scoring, local `Supabase/gte-small` embeddings, pgvector policy retrieval, reviewable reminder drafts, approval-gated PayPal payment-link creation, and tool activity history. Day 4 adds password recovery, application-level error pages, responsive customer/invoice/payment views, customer balances and histories, dashboard overdue and approval queues, invoice status filters and date/number sorting, bounded and rate-limited agent/document APIs, safer payment-state error handling, and a forest-and-ivory workspace palette.
 
 Payment code uses real PayPal responses and persisted database records. Sandbox end-to-end verification requires the Day 2 migration and PayPal Sandbox credentials. The agent uses persisted business data and indexed policy documents; it does not generate demo financial records or simulate payment activity.
 
@@ -323,7 +323,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Apply migrations in order in the Supabase SQL Editor: Day 1 `20261109000100_initial_schema.sql`, Day 2 `20261110000100_paypal_support.sql`, then Day 3 `20261111000100_collections_agent_rag.sql`. Enable the `vector` extension before Day 3. That migration checks for the Day 1/2 schema and stops if required tables are missing.
+Apply migrations in order in the Supabase SQL Editor: Day 1 `20261109000100_initial_schema.sql`, Day 2 `20261110000100_paypal_support.sql`, Day 3 `20261111000100_collections_agent_rag.sql`, then Day 4 `20261112000100_day4_reporting_and_limits.sql`. Enable the `vector` extension before Day 3. Day 3 and Day 4 check for earlier schema prerequisites. Day 4 adds customer reporting functions and per-user limits of 8 agent requests and 3 document uploads per 60-second window.
 
 ### Environment Variables
 

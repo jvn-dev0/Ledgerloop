@@ -3,6 +3,7 @@ import { requireWorkspace } from "@/lib/data/workspace";
 import { DocumentInputError, loadDocument, MAX_DOCUMENT_BYTES } from "@/lib/rag/document-loader";
 import { saveKnowledgeDocument } from "@/lib/rag/ingestion";
 import { readRequestBodyWithinLimit } from "@/lib/http/request-body";
+import { checkApiRateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -23,6 +24,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const { supabase, business } = await requireWorkspace();
+  const limit = await checkApiRateLimit(supabase, "knowledge_upload");
+  if (!limit.allowed) {
+    if ("unavailable" in limit) {
+      return Response.json({ error: "Request protection is unavailable. Try again shortly." }, { status: 503 });
+    }
+    return Response.json({ error: "Too many document uploads. Wait a moment and try again." }, {
+      status: 429,
+      headers: { "Retry-After": String(limit.retryAfterSeconds) },
+    });
+  }
+
   const boundedBody = await readRequestBodyWithinLimit(request, MAX_DOCUMENT_BYTES + 128 * 1024);
   if (!boundedBody.ok) {
     return Response.json(

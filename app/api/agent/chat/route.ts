@@ -5,6 +5,7 @@ import { runAgent } from "@/lib/agent/orchestrator";
 import { getToolDefinitions } from "@/lib/agent/tools";
 import type { ToolContext, ToolExecutionEvent } from "@/lib/agent/types";
 import { readRequestBodyWithinLimit } from "@/lib/http/request-body";
+import { checkApiRateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -14,8 +15,8 @@ const inputSchema = z.object({
   conversationId: z.string().uuid().optional(),
 }).strict();
 
-function errorResponse(message: string, status: number) {
-  return Response.json({ error: message }, { status });
+function errorResponse(message: string, status: number, headers?: HeadersInit) {
+  return Response.json({ error: message }, { status, headers });
 }
 
 function providerError(error: unknown) {
@@ -54,6 +55,14 @@ export async function POST(request: Request) {
   if (!parsed.success) return errorResponse("Enter a request between 1 and 2,000 characters.", 400);
 
   const { supabase, business, ownerId } = await requireWorkspace();
+  const limit = await checkApiRateLimit(supabase, "agent_chat");
+  if (!limit.allowed) {
+    if ("unavailable" in limit) return errorResponse("Request protection is unavailable. Try again shortly.", 503);
+    return errorResponse("Too many assistant requests. Wait a moment and try again.", 429, {
+      "Retry-After": String(limit.retryAfterSeconds),
+    });
+  }
+
   let conversationId = parsed.data.conversationId;
   if (conversationId) {
     const { data, error } = await supabase.from("agent_conversations")
