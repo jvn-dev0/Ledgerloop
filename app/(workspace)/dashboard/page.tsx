@@ -6,7 +6,8 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { EmptyState } from "@/components/ui/feedback";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SummaryMetric } from "@/components/dashboard/summary-metric";
-import { formatDate } from "@/lib/finance/date";
+import { formatDate, formatDateTime } from "@/lib/finance/date";
+import { daysBetween } from "@/lib/agent/collections";
 
 export default async function DashboardPage() {
   const { supabase, business } = await requireWorkspace();
@@ -14,7 +15,7 @@ export default async function DashboardPage() {
   try {
     data = await getDashboardData(supabase, business.id);
   } catch (error) {
-    console.error("Dashboard data could not be loaded", error);
+    console.error("Dashboard data could not be loaded", { name: error instanceof Error ? error.name : "unknown" });
     return <main className="main-content"><PageHeading eyebrow="Overview" title="Dashboard" subtitle="Your receivables at a glance." /><div className="alert" role="alert">Dashboard records could not be loaded. Confirm that the Supabase migration has been applied, then refresh.</div></main>;
   }
 
@@ -44,12 +45,41 @@ export default async function DashboardPage() {
           </section>
         </section>;
       })}
+      <div className="dashboard-operations-grid">
+        <section className="card">
+          <div className="card-head"><div><h2 className="card-title">Collection priorities</h2><p className="card-subtitle">Longest overdue invoices first</p></div><Link className="text-link" href="/assistant">Open assistant</Link></div>
+          {data.priorityInvoicesError ? <div className="alert" role="alert">Overdue invoices could not be loaded.</div> : data.priorityInvoices.length ? <div className="priority-list">
+            {data.priorityInvoices.map((invoice) => {
+              const overdueDays = daysBetween(invoice.due_date, data.today) ?? 0;
+              const customer = data.customerById.get(invoice.customer_id);
+              return <Link className="priority-row" href={`/invoices/${invoice.id}`} key={invoice.id}>
+                <span className="priority-invoice"><strong>{invoice.invoice_number}</strong><span>{customer?.name ?? "Customer unavailable"} · Due {formatDate(invoice.due_date)}</span></span>
+                <span className="priority-amount"><strong>{formatMoney(invoice.amount, invoice.currency)}</strong><span>{overdueDays} days overdue</span></span>
+              </Link>;
+            })}
+          </div> : <EmptyState title="No overdue invoices">Pending invoices past their due dates will appear here.</EmptyState>}
+          {!data.priorityInvoicesError && data.priorityInvoiceCount > data.priorityInvoices.length && <div className="priority-footer">Showing the 5 longest overdue of {data.priorityInvoiceCount}</div>}
+        </section>
+        <section className="card">
+          <div className="card-head"><div><h2 className="card-title">Pending approvals</h2><p className="card-subtitle">Human review before an action proceeds</p></div><Link className="text-link" href="/assistant">Review <span aria-hidden="true">→</span></Link></div>
+          {data.pendingApprovalsError ? <div className="alert" role="alert">Approval status could not be loaded. Confirm the Day 3 migration has been applied.</div> : data.pendingApprovals.length ? <div className="priority-list">
+            {data.pendingApprovals.map((approval) => {
+              const invoice = data.invoiceById.get(approval.invoice_id);
+              return <Link className="approval-row" href="/assistant" key={approval.id}>
+                <span><strong>{invoice?.invoice_number ?? "Invoice unavailable"}</strong><span>{approval.reason}</span></span>
+                <time dateTime={approval.created_at}>{formatDateTime(approval.created_at)}</time>
+              </Link>;
+            })}
+          </div> : <EmptyState title="No approvals waiting">The agent will show proposed actions here for review before execution.</EmptyState>}
+          {!data.pendingApprovalsError && data.pendingApprovalCount > data.pendingApprovals.length && <div className="priority-footer">Showing 5 of {data.pendingApprovalCount} pending approvals</div>}
+        </section>
+      </div>
       <div className="content-grid">
         <section className="card"><div className="card-head"><div><h2 className="card-title">Recent invoices</h2><p className="card-subtitle">Latest records from your business</p></div><Link className="text-link" href="/invoices">All invoices <span aria-hidden="true">→</span></Link></div>
           {data.invoices.length ? <div className="table-wrap"><table className="data-table"><thead><tr><th>Invoice</th><th>Customer</th><th>Due date</th><th>Status</th><th className="amount-cell">Amount</th></tr></thead><tbody>{data.invoices.map((invoice) => { const customer = data.customerById.get(invoice.customer_id); const overdue = invoice.status === "pending" && invoice.due_date < new Date().toISOString().slice(0, 10); return <tr key={invoice.id}><td data-label="Invoice" className="primary-cell"><Link href={`/invoices/${invoice.id}`}>{invoice.invoice_number}</Link></td><td data-label="Customer">{customer?.name ?? "Customer unavailable"}</td><td data-label="Due date">{formatDate(invoice.due_date)}</td><td data-label="Status"><StatusBadge status={invoice.status} overdue={overdue} /></td><td data-label="Amount" className="amount-cell">{formatMoney(invoice.amount, invoice.currency)}</td></tr>; })}</tbody></table></div> : <EmptyState title="No invoice records yet">Create an invoice to start tracking receivables.</EmptyState>}
         </section>
         <section className="card"><div className="card-head"><div><h2 className="card-title">Recent payments</h2><p className="card-subtitle">Latest payment attempts and captures</p></div><Link className="text-link" href="/payments">View all <span aria-hidden="true">→</span></Link></div>
-          {data.activity.length ? data.activity.map((item) => { const invoice = data.invoiceById.get(item.invoice_id); const customer = invoice ? data.customerById.get(invoice.customer_id) : undefined; return <div className="activity-item" key={item.id}><div className="activity-icon" aria-hidden="true">{item.status === "captured" ? "✓" : "↗"}</div><div className="activity-copy"><strong>{invoice ? <Link href={`/invoices/${invoice.id}`}>{invoice.invoice_number}</Link> : "Invoice unavailable"} <span>· {item.provider.toUpperCase()}</span></strong><p>{customer?.name ?? "Customer unavailable"} · {formatMoney(item.amount, item.currency)}</p><span>{item.status.replaceAll("_", " ")} · {formatDate(item.created_at)}</span></div></div>; }) : <EmptyState title="No payment activity yet">Payment attempts and verified captures will appear here.</EmptyState>}
+          {data.activity.length ? data.activity.map((item) => { const invoice = data.invoiceById.get(item.invoice_id); const customer = invoice ? data.customerById.get(invoice.customer_id) : undefined; return <div className="activity-item" key={item.id}><div className="activity-icon" aria-hidden="true">{item.status === "captured" ? "✓" : "↗"}</div><div className="activity-copy"><strong>{invoice ? <Link href={`/invoices/${invoice.id}`}>{invoice.invoice_number}</Link> : "Invoice unavailable"} <span>· {item.provider.toUpperCase()}</span></strong><p>{customer?.name ?? "Customer unavailable"} · {formatMoney(item.amount, item.currency)}</p><span>{item.status.replaceAll("_", " ")} · {formatDateTime(item.created_at)}</span></div></div>; }) : <EmptyState title="No payment activity yet">Payment attempts and verified captures will appear here.</EmptyState>}
         </section>
       </div>
     </main>

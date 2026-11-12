@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { formatMoney, normalizeAmount, sumAmounts } from "../lib/finance/money.ts";
 import { toPayPalAmount } from "../lib/paypal/amount.ts";
-import { formatDate } from "../lib/finance/date.ts";
+import { formatDate, formatDateTime } from "../lib/finance/date.ts";
 
 test("normalizes amounts according to currency precision", () => {
   assert.equal(normalizeAmount("12", "USD"), "12.00");
@@ -24,6 +24,12 @@ test("formats large currency amounts exactly", () => {
 
 test("formats date-only values without shifting the calendar day", () => {
   assert.equal(formatDate("2026-11-10"), "Nov 10, 2026");
+});
+
+test("formats financial timestamps with an explicit UTC zone", () => {
+  assert.match(formatDateTime("2026-11-10T14:30:00.000Z"), /Nov 10, 2026/);
+  assert.match(formatDateTime("2026-11-10T14:30:00.000Z"), /UTC/);
+  assert.equal(formatDateTime("not-a-date"), "not-a-date");
 });
 
 test("formats PayPal amounts to the currency exponent without floating-point conversion", () => {

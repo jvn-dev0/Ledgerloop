@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireWorkspace } from "@/lib/data/workspace";
 import { getInvoices, INVOICE_STATUS_FILTERS, LIST_PAGE_SIZE, parseInvoiceStatusFilter, parseListPage } from "@/lib/data/queries";
+import { INVOICE_SORT_OPTIONS, parseInvoiceSort } from "@/lib/data/invoice-sorting";
 import { formatMoney } from "@/lib/finance/money";
 import { PageHeading } from "@/components/ui/page-heading";
 import { EmptyState, QueryFeedback } from "@/components/ui/feedback";
@@ -9,18 +10,20 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { formatDate } from "@/lib/finance/date";
 
-export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; status?: string; error?: string; notice?: string }> }) {
+export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ q?: string; page?: string; status?: string; sort?: string; error?: string; notice?: string }> }) {
   const params = await searchParams;
   const { supabase, business } = await requireWorkspace();
   const page = parseListPage(params.page);
   const status = parseInvoiceStatusFilter(params.status);
-  const invoicesResult = await getInvoices(supabase, business.id, params.q ?? "", page, status);
+  const sort = parseInvoiceSort(params.sort);
+  const invoicesResult = await getInvoices(supabase, business.id, params.q ?? "", page, status, sort);
   const total = invoicesResult.count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / LIST_PAGE_SIZE));
   if (page > totalPages) {
     const query = new URLSearchParams();
     if (params.q) query.set("q", params.q);
     if (status) query.set("status", status);
+    if (sort !== "newest") query.set("sort", sort);
     if (totalPages > 1) query.set("page", String(totalPages));
     redirect(`/invoices${query.size ? `?${query.toString()}` : ""}`);
   }
@@ -43,6 +46,10 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
             <option value="">All statuses</option>
             {INVOICE_STATUS_FILTERS.map((item) => <option key={item} value={item}>{item === "pending" ? "Pending" : item.charAt(0).toUpperCase() + item.slice(1)}</option>)}
           </select>
+          <label className="sr-only" htmlFor="invoice-sort">Sort invoices</label>
+          <select className="select" id="invoice-sort" name="sort" defaultValue={sort}>
+            {INVOICE_SORT_OPTIONS.map((item) => <option key={item} value={item}>{({ newest: "Newest first", oldest: "Oldest first", due_soon: "Due date: soonest", due_late: "Due date: latest", number_asc: "Invoice number: A to Z", number_desc: "Invoice number: Z to A" })[item]}</option>)}
+          </select>
           <button className="button secondary" type="submit">Apply</button>
         </form>
         <span className="page-subtitle">{total} {total === 1 ? "invoice" : "invoices"}</span>
@@ -56,7 +63,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
           })}
         </tbody></table></div> : <EmptyState title={params.q || status ? "No matching invoices" : "No invoices yet"}>{params.q || status ? "Try another invoice number or status filter." : "Create an invoice from a real customer record to start tracking receivables."}<div style={{ marginTop: 14 }}><Link className="button small" href="/invoices/new">Create invoice</Link></div></EmptyState>}
       </section>
-      {!invoicesResult.error && <PaginationControls basePath="/invoices" currentPage={page} pageSize={LIST_PAGE_SIZE} totalItems={total} query={params.q} filters={{ status }} />}
+      {!invoicesResult.error && <PaginationControls basePath="/invoices" currentPage={page} pageSize={LIST_PAGE_SIZE} totalItems={total} query={params.q} filters={{ status, sort: sort === "newest" ? undefined : sort }} />}
     </main>
   );
 }

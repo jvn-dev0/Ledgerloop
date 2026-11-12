@@ -62,6 +62,10 @@ export type Database = {
         { id: string; business_id: string; actor_type: "user" | "system"; actor_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Json; created_at: string },
         { id?: string; business_id: string; actor_type: "user" | "system"; actor_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Json; created_at?: string }
       >;
+      api_rate_limit_buckets: Table<
+        { owner_id: string; scope: "agent_chat" | "knowledge_upload"; window_started_at: string; request_count: number },
+        { owner_id: string; scope: "agent_chat" | "knowledge_upload"; window_started_at: string; request_count: number }
+      >;
     };
     Views: Record<string, never>;
     Functions: {
@@ -72,6 +76,22 @@ export type Database = {
       get_dashboard_summary_for_business: {
         Args: { p_business_id: string };
         Returns: { currency: string; total_invoiced: string; total_paid: string; total_outstanding: string; total_overdue: string; invoice_count: number; overdue_count: number; draft_count: number; pending_count: number; paid_count: number; cancelled_count: number }[];
+      };
+      get_customer_financial_summary_for_business: {
+        Args: { p_business_id: string; p_customer_id: string };
+        Returns: { currency: string; total_outstanding: string; total_overdue: string; open_invoice_count: number; overdue_invoice_count: number }[];
+      };
+      get_customer_payment_attempts_for_business: {
+        Args: { p_business_id: string; p_customer_id: string; p_limit?: number };
+        Returns: { id: string; invoice_id: string; invoice_number: string; amount: string; currency: string; status: string; provider_order_id: string | null; provider_capture_id: string | null; created_at: string }[];
+      };
+      get_customer_collection_activity_for_business: {
+        Args: { p_business_id: string; p_customer_id: string; p_limit?: number };
+        Returns: { activity_id: string; invoice_id: string; invoice_number: string; tool_name: string; status: string; created_at: string }[];
+      };
+      consume_api_rate_limit: {
+        Args: { p_scope: "agent_chat" | "knowledge_upload" };
+        Returns: { allowed: boolean; retry_after_seconds: number }[];
       };
       finalize_paypal_payment: {
         Args: { p_attempt_id: string; p_order_id: string; p_capture_id: string; p_amount: string; p_currency: string };
